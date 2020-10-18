@@ -1,11 +1,10 @@
 use rand::{distributions::Standard, prelude::*};
 
-const REPULSION_DISTANCE: f64 = 10.0;// FORCE_REACH / 8.0; 
+const REPULSION_DISTANCE: f64 = 10.0; // Should be an absolute value.
 const REPULSION_AMPLITUDE: f64 = -0.05 * DEFAULT_FORCE_AMPLITUDE;
 
 const FORCE_REACH: f64 = 70.0;
-// const FORCE_REACH_SQUARED: f64 = FORCE_REACH * FORCE_REACH;
-const DEFAULT_FORCE_AMPLITUDE: f64 = 0.005; //0.01 is pretty good!
+const DEFAULT_FORCE_AMPLITUDE: f64 = 0.005;
 
 const FRICTION: f64 = 0.9875; // friction should be low!
 
@@ -21,9 +20,7 @@ const FULL_FORCE: f64 = 1.0 * DEFAULT_FORCE_AMPLITUDE;
 const MINUS_HALF_FORCE: f64 = 0.5 * DEFAULT_FORCE_AMPLITUDE;
 const MINUS_FULL_FORCE: f64 = -0.9 * DEFAULT_FORCE_AMPLITUDE;
 
-
 pub struct Spore {
-    //TODO
     pub id: u16,
     pub x_coord: f64,
     pub y_coord: f64,
@@ -34,11 +31,11 @@ pub struct Spore {
 
 #[derive(Debug, Copy, Clone)]
 pub enum SporeType {
-    One,   // aka moving glue
-    Two,   // aka non-moving glue
-    Three, // aka moving antiglue
-    Four,  // aka non-moving antiglue
-    Five,  // aka does nothing
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
 }
 
 pub fn generate_spores(max_x: f64, max_y: f64) -> Vec<Spore> {
@@ -46,11 +43,8 @@ pub fn generate_spores(max_x: f64, max_y: f64) -> Vec<Spore> {
     let mut rng = rand::thread_rng();
 
     for id in 0..NUMBER_OF_SPORES {
-        //100
         let x_coord: f64 = rng.gen_range(0.0, max_x);
         let y_coord: f64 = rng.gen_range(0.0, max_y);
-        // let x_speed: f64 = rng.gen_range(-1.0, 1.0);
-        // let y_speed: f64 = rng.gen_range(-1.0, 1.0);
         let x_speed: f64 = 0.0;
         let y_speed: f64 = 0.0;
 
@@ -97,25 +91,16 @@ pub fn new_spore(
     }
 }
 
+//  TWO loops
+//  1. calculate
+//      b. find neighbours close enough
+//          * square filter
+//          * round filter
+//      c. calculate forces
+// 2. apply
+//      3. update speeds: apply forces + friction to speeds
+//      4. move according to speed
 pub fn move_spores(spores: &mut Vec<Spore>) {
-    // TODO
-    // ONE single loop
-    // 1. find neighbours close enough
-    //      a. square filter
-    //      b. round filter
-    // 2. calculate forces
-
-    // 3. update speeds: apply forces + friction to speeds
-    // 4. move according to speed
-
-    // TODO remove
-    // for spore in spores.iter() {
-    //     // let neighbours =
-    //     calculate_forces(&spore, &spores); // TODO use unsafe?
-    //                                        // spore.x_coord = (spore.x_coord + spore.x_speed) % WINDOW_WIDTH;
-    //                                        // spore.y_coord = (spore.y_coord + spore.y_speed) % WINDOW_HEIGHT;
-    // }
-
     let forces: Vec<Force> = spores
         .iter()
         .map(|spore| calculate_forces(&spore, &spores))
@@ -175,16 +160,6 @@ fn zero_force() -> Force {
     }
 }
 
-// TODO the force is linear to the distance
-// TODO maybe try with different functions
-// TODO also try different distance functions?
-fn scale_force(factor: f64, x_dist: f64, y_dist: f64) -> Force {
-    Force {
-        x_force: x_dist * factor,
-        y_force: y_dist * factor,
-    }
-}
-
 // from <right> on <down>	    One	Two	Three	Four	Five
 //                      One	    0	0.66	1	0	-0.5
 //                      Two	    0.66	-1	-0.5	0	-0.5
@@ -195,8 +170,14 @@ pub fn calculate_force(other: SporeType, spore: SporeType, dist: Dist) -> Force 
     // if too close: acceleration away
     if dist.tot_dist < REPULSION_DISTANCE {
         return Force {
-            x_force: 1.0 / ((dist.x_dist).abs()-REPULSION_DISTANCE/2.0).exp2() * REPULSION_AMPLITUDE * dist.x_dist.signum() + 0.5 * dist.x_dist.signum() ,
-            y_force: 1.0 / ((dist.y_dist).abs()-REPULSION_DISTANCE/2.0).exp2() * REPULSION_AMPLITUDE * dist.y_dist.signum()+ 0.5 * dist.y_dist.signum(),
+            x_force: 1.0 / ((dist.x_dist).abs() - REPULSION_DISTANCE / 2.0).exp2()
+                * REPULSION_AMPLITUDE
+                * dist.x_dist.signum()
+                + 0.5 * dist.x_dist.signum(),
+            y_force: 1.0 / ((dist.y_dist).abs() - REPULSION_DISTANCE / 2.0).exp2()
+                * REPULSION_AMPLITUDE
+                * dist.y_dist.signum()
+                + 0.5 * dist.y_dist.signum(),
         };
     }
 
@@ -240,6 +221,16 @@ pub fn calculate_force(other: SporeType, spore: SporeType, dist: Dist) -> Force 
     scale_force(force_factor, dist.x_dist, dist.y_dist)
 }
 
+// TODO the force is linear to the distance
+// TODO maybe try with different functions
+// TODO also try different distance functions?
+fn scale_force(factor: f64, x_dist: f64, y_dist: f64) -> Force {
+    Force {
+        x_force: x_dist * factor,
+        y_force: y_dist * factor,
+    }
+}
+
 fn apply_force_and_move(spore: &mut Spore, force: &Force) {
     spore.x_speed = spore.x_speed * FRICTION + force.x_force;
     spore.y_speed = spore.y_speed * FRICTION + force.y_force;
@@ -249,7 +240,4 @@ fn apply_force_and_move(spore: &mut Spore, force: &Force) {
 
     spore.x_coord = (((new_x_coord) % WINDOW_WIDTH) + WINDOW_WIDTH) % WINDOW_WIDTH;
     spore.y_coord = ((new_y_coord % WINDOW_HEIGHT) + WINDOW_HEIGHT) % WINDOW_HEIGHT;
-
-    // print!("coords: ( {} , {} )", spore.x_coord, spore.y_coord);
-    // print!("speeds: ( {} , {} )", spore.x_speed, spore.y_speed);
 }

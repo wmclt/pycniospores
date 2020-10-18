@@ -7,6 +7,7 @@ https://www.sfml-dev.org/tutorials/2.5/graphics-view.php
 * spores don't work like in video https://www.youtube.com/watch?v=Z_zmZ23grXE
     * symmetric linear function 
     * variable distances for repulsion and force
+    * force function only depends on other spore's type, not on own type
 * scaling
     * acceleration structure
         * divide universe in squares = buckets
@@ -15,6 +16,7 @@ https://www.sfml-dev.org/tutorials/2.5/graphics-view.php
 ## FUTURE
 * more particles
 * non-linear force equations
+* symmetric vs asymmetric forces
 
 ## DONE
 * ☑️ window
