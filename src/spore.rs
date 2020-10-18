@@ -203,7 +203,7 @@ pub fn calculate_force(other: SporeType, spore: SporeType, dist: Dist) -> Force 
     let force_factor: f64 = match spore {
         SporeType::One => match other {
             SporeType::One => ZERO_FORCE,
-            SporeType::Two => TWO_THIRDS_FORCE,
+            SporeType::Two => MINUS_HALF_FORCE,
             SporeType::Three => FULL_FORCE,
             SporeType::Four => ZERO_FORCE,
             SporeType::Five => MINUS_HALF_FORCE,
@@ -218,7 +218,7 @@ pub fn calculate_force(other: SporeType, spore: SporeType, dist: Dist) -> Force 
         SporeType::Three => match other {
             SporeType::One => FULL_FORCE,
             SporeType::Two => ONE_THIRD_FORCE,
-            SporeType::Three => FULL_FORCE,
+            SporeType::Three => MINUS_FULL_FORCE,
             SporeType::Four => ONE_THIRD_FORCE,
             SporeType::Five => TWO_THIRDS_FORCE,
         },

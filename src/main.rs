@@ -19,12 +19,11 @@ const DIAMETER: f64 = 5.0;
 
 fn main() {
     let opengl = OpenGL::V3_2;
-    let mut window: GlutinWindow = WindowSettings::new("Pong", [WINDOW_WIDTH, WINDOW_HEIGHT])
+    let mut window: GlutinWindow = WindowSettings::new("Pycniospores", [WINDOW_WIDTH, WINDOW_HEIGHT])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
-    println!("Hello, world!");
 
     let mut app = App {
         gl: GlGraphics::new(opengl),
@@ -79,7 +78,7 @@ pub struct App {
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {
-        let background: [f32; 4] = hex("000033");
+        let background: [f32; 4] = hex("01011C");
         let spores = &self.spores;
         self.gl.draw(args.viewport(), |c, gl| {
             clear(background, gl);
