@@ -3,12 +3,11 @@ name = "pycniospores"
 version = "0.1.0"
 authors = ["William Mclt <william.mauclet+gitlab@gmail.com>"]
 edition = "2018"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.7"
-piston = "0.52.0"
-piston2d-graphics = "0.37.0"
-pistoncore-glutin_window = "0.67.0"
-piston2d-opengl_graphics = "0.74.0"
+ggez = "0.5.1"
+rand = "0.7.3"
+rayon = "1.4.1"
