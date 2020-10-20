@@ -1,5 +1,7 @@
 # pycniospores
 
+AVERAGE FPS with 600 SPORES: 60 FPS
+
 ## About: Piston
 [read this tutorial](https://github.com/PistonDevelopers/Piston-Tutorials/tree/master/sudoku)
 

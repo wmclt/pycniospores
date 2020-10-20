@@ -12,24 +12,25 @@ use spore::{generate_spores, move_spores, Spore, SporeType};
 
 pub mod spore;
 
-struct MainState {
-    tick: u64,
+struct SporeUniverse {
+    tick: u32,
     spores: Vec<Spore>,
 }
 
-impl MainState {
-    fn new() -> GameResult<MainState> {
-        let s = MainState {
+impl SporeUniverse {
+    fn new() -> GameResult<SporeUniverse> {
+        let s = SporeUniverse {
             tick: 0,
-            spores: generate_spores(800.0, 800.0),
+            spores: generate_spores(),
         };
         Ok(s)
     }
 }
 
-impl event::EventHandler for MainState {
+impl event::EventHandler for SporeUniverse {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         move_spores(&mut self.spores);
+        self.tick += 1;
         Ok(())
     }
 
@@ -37,23 +38,23 @@ impl event::EventHandler for MainState {
         let background_color = rgb(34, 49, 63);
         graphics::clear(ctx, background_color);
 
-        self.spores
-            .iter()
-            .map(|spore| draw_spore(ctx, &spore))
-            .for_each(|r| r.unwrap());
-
-        show_fps(ctx)?;
+        draw_spores(ctx, &self.spores)?;
+        show_fps(ctx, self.tick)?;
 
         graphics::present(ctx)?;
         Ok(())
     }
 }
 
-fn show_fps(ctx: &mut Context) -> GameResult{
+fn show_fps(ctx: &mut Context, tick: u32) -> GameResult {
     let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
     graphics::draw(
         ctx,
-        &graphics::Text::new((format!("{}", timer::fps(ctx)), font, 48.0)),
+        &graphics::Text::new((
+            format!("FPS: {} \nTick: {}", timer::fps(ctx), tick),
+            font,
+            24.0,
+        )),
         graphics::DrawParam::new()
             // .dest(dest_point)
             .color(graphics::WHITE),
@@ -61,20 +62,20 @@ fn show_fps(ctx: &mut Context) -> GameResult{
     Ok(())
 }
 
-fn draw_spore(ctx: &mut Context, spore: &Spore) -> GameResult {
-    let circle = graphics::Mesh::new_circle(
-        ctx,
-        graphics::DrawMode::fill(),
-        na::Point2::new(0.0, 0.0),
-        5.0,
-        0.01,
-        get_color(spore.spore_type),
-    )?;
-    graphics::draw(
-        ctx,
-        &circle,
-        (na::Point2::new(spore.x_coord, spore.y_coord),),
-    )?;
+fn draw_spores(ctx: &mut Context, spores: &Vec<Spore>) -> GameResult {
+    let mut mesh_builder = graphics::MeshBuilder::new();
+    for spore in spores {
+        mesh_builder.circle(
+            graphics::DrawMode::fill(),
+            na::Point2::new(spore.x_coord, spore.y_coord),
+            5.0,
+            0.01,
+            get_color(spore.spore_type),
+        );
+    }
+    let mesh = mesh_builder.build(ctx)?;
+    graphics::draw(ctx, &mesh, (ggez::mint::Point2 { x: 0.0, y: 0.0 },))?;
+
     Ok(())
 }
 
@@ -106,8 +107,9 @@ pub fn main() -> GameResult {
     } else {
         path::PathBuf::from("./resources")
     };
-    let cb = ggez::ContextBuilder::new("super_simple", "ggez").add_resource_path(resource_dir);
+    let cb =
+        ggez::ContextBuilder::new("pycniospores", "william mclt").add_resource_path(resource_dir);
     let (ctx, event_loop) = &mut cb.build()?;
-    let state = &mut MainState::new()?;
+    let state = &mut SporeUniverse::new()?;
     event::run(ctx, event_loop, state)
 }

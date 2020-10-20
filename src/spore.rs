@@ -10,10 +10,10 @@ const DEFAULT_FORCE_AMPLITUDE: f32 = 0.005;
 
 const FRICTION: f32 = 0.9875; // friction should be low!
 
-pub const WINDOW_HEIGHT: f32 = 800.0;
-pub const WINDOW_WIDTH: f32 = 1200.0;
+pub const WINDOW_HEIGHT: f32 = 600.0;
+pub const WINDOW_WIDTH: f32 = 800.0;
 
-const NUMBER_OF_SPORES: u16 = 200;
+const NUMBER_OF_SPORES: u16 = 300;
 
 const ZERO_FORCE: f32 = 0.0 * DEFAULT_FORCE_AMPLITUDE;
 const ONE_THIRD_FORCE: f32 = 0.33 * DEFAULT_FORCE_AMPLITUDE;
@@ -40,13 +40,13 @@ pub enum SporeType {
     Five,
 }
 
-pub fn generate_spores(max_x: f32, max_y: f32) -> Vec<Spore> {
+pub fn generate_spores() -> Vec<Spore> {
     let mut results = Vec::new();
     let mut rng = rand::thread_rng();
 
     for id in 0..NUMBER_OF_SPORES {
-        let x_coord: f32 = rng.gen_range(0.0, max_x);
-        let y_coord: f32 = rng.gen_range(0.0, max_y);
+        let x_coord: f32 = rng.gen_range(0.0, WINDOW_WIDTH);
+        let y_coord: f32 = rng.gen_range(0.0, WINDOW_HEIGHT);
         let x_speed: f32 = 0.0;
         let y_speed: f32 = 0.0;
 
