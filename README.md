@@ -1,5 +1,8 @@
 # pycniospores
 
+## About: Piston
+[read this tutorial](https://github.com/PistonDevelopers/Piston-Tutorials/tree/master/sudoku)
+
 ## About scaling: views
 [guide about scaling](https://www.sfml-dev.org/tutorials/2.5/graphics-view.php)
 
@@ -26,9 +29,9 @@ bincode does use Serde, but is more exactly what I'm looking for.
     * 1 line per tick!
   * deserialiser deserialises
   * visualisation
-* maybe two options:
-  * option live
-  * option simulate, then watch later
+    * maybe two options:
+      * option live
+      * option simulate, then watch later
 
 ## FUTURE
 
