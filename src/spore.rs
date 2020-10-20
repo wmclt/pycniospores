@@ -74,7 +74,6 @@ impl Distribution<SporeType> for Standard {
     }
 }
 
-// TODO spores will start with speed 0
 pub fn new_spore(
     id: u16,
     x_coord: f32,

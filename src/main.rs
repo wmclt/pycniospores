@@ -1,6 +1,7 @@
-//! The simplest possible example that does something.
-
-use std::{env, path};
+use std::{
+    env,
+    path::{self, PathBuf},
+};
 
 use ggez::event;
 use ggez::graphics;
@@ -46,22 +47,6 @@ impl event::EventHandler for SporeUniverse {
     }
 }
 
-fn show_fps(ctx: &mut Context, tick: u32) -> GameResult {
-    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
-    graphics::draw(
-        ctx,
-        &graphics::Text::new((
-            format!("FPS: {} \nTick: {}", timer::fps(ctx), tick),
-            font,
-            24.0,
-        )),
-        graphics::DrawParam::new()
-            // .dest(dest_point)
-            .color(graphics::WHITE),
-    )?;
-    Ok(())
-}
-
 fn draw_spores(ctx: &mut Context, spores: &Vec<Spore>) -> GameResult {
     let mut mesh_builder = graphics::MeshBuilder::new();
     for spore in spores {
@@ -89,6 +74,22 @@ fn get_color(spore_type: SporeType) -> Color {
     }
 }
 
+fn show_fps(ctx: &mut Context, tick: u32) -> GameResult {
+    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
+    graphics::draw(
+        ctx,
+        &graphics::Text::new((
+            format!("FPS: {} \nTick: {}", timer::fps(ctx), tick),
+            font,
+            24.0,
+        )),
+        graphics::DrawParam::new()
+            // .dest(dest_point)
+            .color(graphics::WHITE),
+    )?;
+    Ok(())
+}
+
 fn rgb(r: u8, g: u8, b: u8) -> Color {
     [
         (r as f32) / 255.0,
@@ -99,16 +100,19 @@ fn rgb(r: u8, g: u8, b: u8) -> Color {
     .into()
 }
 
-pub fn main() -> GameResult {
-    let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+fn get_resource_dir() -> PathBuf {
+    if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
         let mut path = path::PathBuf::from(manifest_dir);
         path.push("resources");
         path
     } else {
         path::PathBuf::from("./resources")
-    };
-    let cb =
-        ggez::ContextBuilder::new("pycniospores", "william mclt").add_resource_path(resource_dir);
+    }
+}
+
+pub fn main() -> GameResult {
+    let cb = ggez::ContextBuilder::new("pycniospores", "william mclt")
+        .add_resource_path(get_resource_dir());
     let (ctx, event_loop) = &mut cb.build()?;
     let state = &mut SporeUniverse::new()?;
     event::run(ctx, event_loop, state)
