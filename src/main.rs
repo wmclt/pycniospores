@@ -3,7 +3,7 @@ use std::{
     path::{self, PathBuf},
 };
 
-use ggez::event;
+use ggez::{graphics::Font, event};
 use ggez::graphics;
 use ggez::nalgebra as na;
 use ggez::timer;
@@ -16,13 +16,15 @@ pub mod spore;
 struct SporeUniverse {
     tick: u32,
     spores: Vec<Spore>,
+    font: Font,
 }
 
 impl SporeUniverse {
-    fn new() -> GameResult<SporeUniverse> {
+    fn new(font: Font) -> GameResult<SporeUniverse> {
         let s = SporeUniverse {
             tick: 0,
             spores: generate_spores(),
+            font,
         };
         Ok(s)
     }
@@ -40,7 +42,7 @@ impl event::EventHandler for SporeUniverse {
         graphics::clear(ctx, background_color);
 
         draw_spores(ctx, &self.spores)?;
-        show_fps(ctx, self.tick)?;
+        show_fps(ctx, self.font, self.tick)?;
 
         graphics::present(ctx)?;
         Ok(())
@@ -74,8 +76,7 @@ fn get_color(spore_type: SporeType) -> Color {
     }
 }
 
-fn show_fps(ctx: &mut Context, tick: u32) -> GameResult {
-    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
+fn show_fps(ctx: &mut Context, font:Font, tick: u32) -> GameResult {
     graphics::draw(
         ctx,
         &graphics::Text::new((
@@ -113,7 +114,9 @@ fn get_resource_dir() -> PathBuf {
 pub fn main() -> GameResult {
     let cb = ggez::ContextBuilder::new("pycniospores", "william mclt")
         .add_resource_path(get_resource_dir());
+
     let (ctx, event_loop) = &mut cb.build()?;
-    let state = &mut SporeUniverse::new()?;
+    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
+    let state = &mut SporeUniverse::new(font)?;
     event::run(ctx, event_loop, state)
 }

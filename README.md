@@ -15,7 +15,8 @@ bincode does use Serde, but is more exactly what I'm looking for.
 
 ## TODO
 * ☑️ show fps
-* reduce fps by using mesh
+* ☑️ increase fps to 60 by using mesh
+* ☑️ memory leak!
 * show tick: see piston examples > hello_world
 * spores don't work like in [video](https://www.youtube.com/watch?v=Z_zmZ23grXE)
   * symmetric linear function
