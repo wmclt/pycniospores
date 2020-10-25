@@ -2,21 +2,35 @@
 
 AVERAGE FPS with 600 SPORES: 60 FPS
 
-## About: Piston
-[read this tutorial](https://github.com/PistonDevelopers/Piston-Tutorials/tree/master/sudoku)
+## Literature
 
-## About scaling: views
+### About scaling: views
 [guide about scaling](https://www.sfml-dev.org/tutorials/2.5/graphics-view.php)
 
-## About (de)serialisation: servo/bincode
+### About (de)serialisation: servo/bincode
 [repo of bincode](https://github.com/servo/bincode)
-
 bincode does use Serde, but is more exactly what I'm looking for.
+explanation how to serialize, save to file, use buffered writer, use compression: [blog](https://peteris.rocks/blog/serialize-any-object-to-a-binary-format-in-rust/)
+
+### Cross-compilation
+
+[General](https://rust-lang.github.io/rustup/cross-compilation.html)
+[Windows](https://stackoverflow.com/questions/31492799/cross-compile-a-rust-application-from-linux-to-windows)
+
+check this: https://doc.rust-lang.org/nightly/rustc/platform-support.html
+
+Didn't work:, see https://stackoverflow.com/questions/9221236/pkg-config-fails-to-find-package-under-sysroot-directory
+For Linux:
+```sh
+  # installing toolchain for target
+  rustup toolchain install stable-x86_64-unknown-linux-gnu
+  # adding target
+  rustup target add x86_64-unknown-linux-gnu --toolchain stable-x86_64-unknown-linux-gnu 
+  ## building for target
+  cargo build --release --target x86_64-unknown-linux-gnu  
+```
 
 ## TODO
-* ☑️ show fps
-* ☑️ increase fps to 60 by using mesh
-* ☑️ memory leak!
 * show tick: see piston examples > hello_world
 * spores don't work like in [video](https://www.youtube.com/watch?v=Z_zmZ23grXE)
   * symmetric linear function
@@ -61,3 +75,9 @@ bincode does use Serde, but is more exactly what I'm looking for.
   * ☑️ movement based on force
   * ☑️ friction: constant deceleration
   * ☑️ spores can work at small scale
+* ☑️ show fps
+* ☑️ increase fps to 60 by using mesh
+* ☑️ memory leak!
+* ☑️ forces (not just movements) must be able to wrap around
+  * you can see that it doesn't if spores gather at the border of the window
+  * solution: map coordinates to closest coordinates, according to x- and y-axis separately

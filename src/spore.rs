@@ -2,16 +2,21 @@ use rand::{distributions::Standard, prelude::*};
 
 use rayon::prelude::*;
 
-const REPULSION_DISTANCE: f32 = 10.0; // Should be an absolute value.
-const REPULSION_AMPLITUDE: f32 = -0.05 * DEFAULT_FORCE_AMPLITUDE;
+const REPULSION_DISTANCE: f32 = 15.0; // Should be an absolute value.
+const REPULSION_DISTANCE_SQRD: f32 = REPULSION_DISTANCE * REPULSION_DISTANCE;
+const REPULSION_AMPLITUDE: f32 = -8.0 * DEFAULT_FORCE_AMPLITUDE;
 
-const FORCE_REACH: f32 = 70.0;
-const DEFAULT_FORCE_AMPLITUDE: f32 = 0.005;
+const FORCE_REACH: f32 = 50.0; //70
+const DEFAULT_FORCE_AMPLITUDE: f32 = 0.02; //0.006
 
-const FRICTION: f32 = 0.9875; // friction should be low!
+// afgeleide gegevens
+const NET_FORCE_REACH: f32 = FORCE_REACH - REPULSION_DISTANCE;
+const HALF_NET_FORCE_REACH: f32 = NET_FORCE_REACH / 2.0;
 
-pub const WINDOW_HEIGHT: f32 = 600.0;
-pub const WINDOW_WIDTH: f32 = 800.0;
+const FRICTION: f32 = 0.98; // friction should be low!
+
+pub const WINDOW_HEIGHT: f32 = 840.0; //1080.0;
+pub const WINDOW_WIDTH: f32 = 1360.0; //1920.0;
 
 const NUMBER_OF_SPORES: u16 = 300;
 
@@ -128,30 +133,41 @@ pub fn calculate_forces(spore: &Spore, spores: &Vec<Spore>) -> Force {
     spores
         .iter()
         .filter(|&other| spore.id != other.id)
-        .filter(|&other| {
-            (other.x_coord - spore.x_coord).abs() <= FORCE_REACH
-                && (other.y_coord - spore.y_coord).abs() <= FORCE_REACH
-        })
-        .map(|other| {
-            let x_dist = other.x_coord - spore.x_coord;
-            let y_dist = other.y_coord - spore.y_coord;
-            let tot_dist = (x_dist.powi(2) + y_dist.powi(2)).sqrt();
-            (
-                other,
-                Dist {
-                    x_dist,
-                    y_dist,
-                    tot_dist,
-                },
-            )
-        })
+        .map(|other| to_calibrated_dist(other, spore))
+        .filter(|(_other, dist)| dist.x_dist <= FORCE_REACH && dist.y_dist <= FORCE_REACH)
         .filter(|(_other, dist)| dist.tot_dist <= FORCE_REACH)
         .map(|(other, dist)| calculate_force(other.spore_type, spore.spore_type, dist))
-        // .map(|(other, dist)| scale_force(5.0, 1.0, 1.0))
         .fold(zero_force(), |force, next_force| Force {
             x_force: force.x_force + next_force.x_force,
             y_force: force.y_force + next_force.y_force,
         })
+}
+
+fn to_calibrated_dist<'a>(other: &'a Spore, spore: &Spore) -> (&'a Spore, Dist) {
+    let uncalibrated_x_dist = other.x_coord - spore.x_coord;
+    let uncalibrated_y_dist = other.y_coord - spore.y_coord;
+
+    // recalibrate to account for wraparound
+    let x_dist = if uncalibrated_x_dist.abs() >= WINDOW_WIDTH - FORCE_REACH {
+        uncalibrated_x_dist - WINDOW_WIDTH * uncalibrated_x_dist.signum()
+    } else {
+        uncalibrated_x_dist
+    };
+    let y_dist = if uncalibrated_y_dist.abs() >= WINDOW_HEIGHT - FORCE_REACH {
+        uncalibrated_y_dist - WINDOW_HEIGHT * uncalibrated_y_dist.signum()
+    } else {
+        uncalibrated_y_dist
+    };
+
+    let tot_dist = (x_dist.powi(2) + y_dist.powi(2)).sqrt();
+    (
+        other,
+        Dist {
+            x_dist,
+            y_dist,
+            tot_dist,
+        },
+    )
 }
 
 fn zero_force() -> Force {
@@ -161,74 +177,39 @@ fn zero_force() -> Force {
     }
 }
 
-// from <right> on <down>	    One	Two	Three	Four	Five
-//                      One	    0	0.66	1	0	-0.5
-//                      Two	    0.66	-1	-0.5	0	-0.5
-//                      Three	1	0.33	1	0.33	0.66
-//                      Four	-0.5	1	0.33	0.66	0.33
-//                      Five	0.66	0.33	-0.5	0.66	1
-pub fn calculate_force(other: SporeType, spore: SporeType, dist: Dist) -> Force {
+pub fn calculate_force(other: SporeType, _spore: SporeType, dist: Dist) -> Force {
     // if too close: acceleration away
     if dist.tot_dist < REPULSION_DISTANCE {
+        let repulsion_force = (dist.tot_dist - REPULSION_DISTANCE).powi(2) * REPULSION_AMPLITUDE
+            / REPULSION_DISTANCE
+            / REPULSION_DISTANCE_SQRD;
+
         return Force {
-            x_force: 1.0 / ((dist.x_dist).abs() - REPULSION_DISTANCE / 2.0).exp2()
-                * REPULSION_AMPLITUDE
-                * dist.x_dist.signum()
-                + 0.5 * dist.x_dist.signum(),
-            y_force: 1.0 / ((dist.y_dist).abs() - REPULSION_DISTANCE / 2.0).exp2()
-                * REPULSION_AMPLITUDE
-                * dist.y_dist.signum()
-                + 0.5 * dist.y_dist.signum(),
+            x_force: repulsion_force * dist.x_dist,
+            y_force: repulsion_force * dist.y_dist,
         };
     }
 
-    let force_factor: f32 = match spore {
-        SporeType::One => match other {
-            SporeType::One => ZERO_FORCE,
-            SporeType::Two => MINUS_HALF_FORCE,
-            SporeType::Three => FULL_FORCE,
-            SporeType::Four => ZERO_FORCE,
-            SporeType::Five => MINUS_HALF_FORCE,
-        },
-        SporeType::Two => match other {
-            SporeType::One => TWO_THIRDS_FORCE,
-            SporeType::Two => MINUS_FULL_FORCE,
-            SporeType::Three => MINUS_HALF_FORCE,
-            SporeType::Four => ZERO_FORCE,
-            SporeType::Five => MINUS_HALF_FORCE,
-        },
-        SporeType::Three => match other {
-            SporeType::One => FULL_FORCE,
-            SporeType::Two => ONE_THIRD_FORCE,
-            SporeType::Three => MINUS_FULL_FORCE,
-            SporeType::Four => ONE_THIRD_FORCE,
-            SporeType::Five => TWO_THIRDS_FORCE,
-        },
-        SporeType::Four => match other {
-            SporeType::One => MINUS_HALF_FORCE,
-            SporeType::Two => FULL_FORCE,
-            SporeType::Three => ONE_THIRD_FORCE,
-            SporeType::Four => TWO_THIRDS_FORCE,
-            SporeType::Five => ONE_THIRD_FORCE,
-        },
-        SporeType::Five => match other {
-            SporeType::One => TWO_THIRDS_FORCE,
-            SporeType::Two => ONE_THIRD_FORCE,
-            SporeType::Three => MINUS_HALF_FORCE,
-            SporeType::Four => TWO_THIRDS_FORCE,
-            SporeType::Five => FULL_FORCE,
-        },
+    let force_factor: f32 = match other {
+        SporeType::One => FULL_FORCE,
+        SporeType::Two => ONE_THIRD_FORCE,
+        SporeType::Three => MINUS_FULL_FORCE,
+        SporeType::Four => ONE_THIRD_FORCE,
+        SporeType::Five => TWO_THIRDS_FORCE,
     };
-    scale_force(force_factor, dist.x_dist, dist.y_dist)
+    scale_force(force_factor, dist)
 }
 
-// TODO the force is linear to the distance
-// TODO maybe try with different functions
-// TODO also try different distance functions?
-fn scale_force(factor: f32, x_dist: f32, y_dist: f32) -> Force {
+// TODO try with different functions and try different distance functions -> like in video
+// the force is linear to the distance |\./\ or |\.\/
+fn scale_force(factor: f32, dist: Dist) -> Force {
+    let not_repulsion_distance = dist.tot_dist - REPULSION_DISTANCE;
+    let dist_from_force_reach_center = (NET_FORCE_REACH - not_repulsion_distance).abs();
+    let scale = dist_from_force_reach_center / HALF_NET_FORCE_REACH;
+
     Force {
-        x_force: x_dist * factor,
-        y_force: y_dist * factor,
+        x_force: dist.x_dist * factor / dist.tot_dist * scale,
+        y_force: dist.y_dist * factor / dist.tot_dist * scale,
     }
 }
 
