@@ -2,9 +2,9 @@ use rand::{distributions::Standard, prelude::*};
 
 use rayon::prelude::*;
 
-const REPULSION_DISTANCE: f32 = 15.0; // Should be an absolute value.
+const REPULSION_DISTANCE: f32 = 25.0; // Should be an absolute value.
 const REPULSION_DISTANCE_SQRD: f32 = REPULSION_DISTANCE * REPULSION_DISTANCE;
-const REPULSION_AMPLITUDE: f32 = -8.0 * DEFAULT_FORCE_AMPLITUDE;
+const REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
 
 const FORCE_REACH: f32 = 50.0; //70
 const DEFAULT_FORCE_AMPLITUDE: f32 = 0.02; //0.006
@@ -15,16 +15,16 @@ const HALF_NET_FORCE_REACH: f32 = NET_FORCE_REACH / 2.0;
 
 const FRICTION: f32 = 0.98; // friction should be low!
 
-pub const WINDOW_HEIGHT: f32 = 840.0; //1080.0;
-pub const WINDOW_WIDTH: f32 = 1360.0; //1920.0;
+pub const WINDOW_HEIGHT: f32 = 1080.0;//840.0; //1080.0;
+pub const WINDOW_WIDTH: f32 = 1920.0;//1360.0; //1920.0;
 
-const NUMBER_OF_SPORES: u16 = 300;
+const NUMBER_OF_SPORES: u16 = 500;
 
-const ZERO_FORCE: f32 = 0.0 * DEFAULT_FORCE_AMPLITUDE;
+// const ZERO_FORCE: f32 = 0.0 * DEFAULT_FORCE_AMPLITUDE;
 const ONE_THIRD_FORCE: f32 = 0.33 * DEFAULT_FORCE_AMPLITUDE;
 const TWO_THIRDS_FORCE: f32 = 0.66 * DEFAULT_FORCE_AMPLITUDE;
-const FULL_FORCE: f32 = 1.0 * DEFAULT_FORCE_AMPLITUDE;
-const MINUS_HALF_FORCE: f32 = 0.5 * DEFAULT_FORCE_AMPLITUDE;
+const FULL_FORCE: f32 = 0.8 * DEFAULT_FORCE_AMPLITUDE;
+const MINUS_HALF_FORCE: f32 = -0.5 * DEFAULT_FORCE_AMPLITUDE;
 const MINUS_FULL_FORCE: f32 = -0.9 * DEFAULT_FORCE_AMPLITUDE;
 
 pub struct Spore {
@@ -43,6 +43,7 @@ pub enum SporeType {
     Three,
     Four,
     Five,
+    Six,
 }
 
 pub fn generate_spores() -> Vec<Spore> {
@@ -69,12 +70,14 @@ pub fn generate_spores() -> Vec<Spore> {
 
 impl Distribution<SporeType> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> SporeType {
-        match rng.gen_range(0, 4) {
+        match rng.gen_range(0, 6) {
             0 => SporeType::One,
             1 => SporeType::Two,
             2 => SporeType::Three,
             3 => SporeType::Four,
-            _ => SporeType::Five,
+            4 => SporeType::Five,
+            5 => SporeType::Six,
+            _ => panic!("woups"),
         }
     }
 }
@@ -196,6 +199,7 @@ pub fn calculate_force(other: SporeType, _spore: SporeType, dist: Dist) -> Force
         SporeType::Three => MINUS_FULL_FORCE,
         SporeType::Four => ONE_THIRD_FORCE,
         SporeType::Five => TWO_THIRDS_FORCE,
+        SporeType::Six => MINUS_HALF_FORCE,
     };
     scale_force(force_factor, dist)
 }

@@ -75,6 +75,7 @@ fn get_color(spore_type: SporeType) -> Color {
         SporeType::Three => rgb(170, 246, 131), // light green
         SporeType::Four => rgb(255, 217, 125),  // orange
         SporeType::Five => rgb(255, 155, 133),  // salmon
+        SporeType::Six => rgb(89, 136, 207),  // blue
     }
 }
 
