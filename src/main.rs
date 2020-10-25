@@ -3,13 +3,15 @@ use std::{
     path::{self, PathBuf},
 };
 
-use ggez::{graphics::Font, event};
-use ggez::graphics;
-use ggez::nalgebra as na;
 use ggez::timer;
 use ggez::{self, graphics::Color};
+use ggez::{
+    conf::{self},
+    graphics, nalgebra as na,
+};
+use ggez::{event, graphics::Font};
 use ggez::{Context, GameResult};
-use spore::{generate_spores, move_spores, Spore, SporeType};
+use spore::{generate_spores, move_spores, Spore, SporeType, WINDOW_HEIGHT, WINDOW_WIDTH};
 
 pub mod spore;
 
@@ -55,7 +57,7 @@ fn draw_spores(ctx: &mut Context, spores: &Vec<Spore>) -> GameResult {
         mesh_builder.circle(
             graphics::DrawMode::fill(),
             na::Point2::new(spore.x_coord, spore.y_coord),
-            5.0,
+            4.0,
             0.01,
             get_color(spore.spore_type),
         );
@@ -76,7 +78,7 @@ fn get_color(spore_type: SporeType) -> Color {
     }
 }
 
-fn show_fps(ctx: &mut Context, font:Font, tick: u32) -> GameResult {
+fn show_fps(ctx: &mut Context, font: Font, tick: u32) -> GameResult {
     graphics::draw(
         ctx,
         &graphics::Text::new((
@@ -113,7 +115,14 @@ fn get_resource_dir() -> PathBuf {
 
 pub fn main() -> GameResult {
     let cb = ggez::ContextBuilder::new("pycniospores", "william mclt")
-        .add_resource_path(get_resource_dir());
+        .add_resource_path(get_resource_dir())
+        .window_mode(
+            conf::WindowMode::default()
+                .dimensions(WINDOW_WIDTH, WINDOW_HEIGHT)
+                .fullscreen_type(conf::FullscreenType::Windowed)
+                .resizable(true),
+        )
+        .window_setup(conf::WindowSetup::default().title("pycniospores"));
 
     let (ctx, event_loop) = &mut cb.build()?;
     let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
