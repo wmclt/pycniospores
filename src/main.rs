@@ -1,8 +1,3 @@
-use std::{
-    env,
-    path::{self, PathBuf},
-};
-
 use ggez::timer;
 use ggez::{self, graphics::Color};
 use ggez::{
@@ -11,22 +6,33 @@ use ggez::{
 };
 use ggez::{event, graphics::Font};
 use ggez::{Context, GameResult};
-use spore::{generate_spores, move_spores, Spore, SporeType, WINDOW_HEIGHT, WINDOW_WIDTH};
+
+use std::{
+    collections::HashMap,
+    env,
+    path::{self, PathBuf},
+};
 
 pub mod spore;
+use spore::{
+    generate_spore_configs, generate_spores, move_spores, Spore, SporeConfig, SporeType,
+    WINDOW_HEIGHT, WINDOW_WIDTH,
+};
 
 struct SporeUniverse {
-    tick: u32,
-    spores: Vec<Spore>,
     font: Font,
+    tick: u32,
+    spore_configs: HashMap<SporeType, SporeConfig>,
+    spores: Vec<Spore>,
 }
 
 impl SporeUniverse {
     fn new(font: Font) -> GameResult<SporeUniverse> {
         let s = SporeUniverse {
-            tick: 0,
-            spores: generate_spores(),
             font,
+            tick: 0,
+            spore_configs: generate_spore_configs(),
+            spores: generate_spores(),
         };
         Ok(s)
     }
@@ -34,7 +40,7 @@ impl SporeUniverse {
 
 impl event::EventHandler for SporeUniverse {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
-        move_spores(&mut self.spores);
+        move_spores(&self.spore_configs, &mut self.spores);
         self.tick += 1;
         Ok(())
     }
@@ -75,7 +81,7 @@ fn get_color(spore_type: SporeType) -> Color {
         SporeType::Three => rgb(170, 246, 131), // light green
         SporeType::Four => rgb(255, 217, 125),  // orange
         SporeType::Five => rgb(255, 155, 133),  // salmon
-        SporeType::Six => rgb(89, 136, 207),  // blue
+        SporeType::Six => rgb(89, 136, 207),    // blue
     }
 }
 
@@ -128,5 +134,7 @@ pub fn main() -> GameResult {
     let (ctx, event_loop) = &mut cb.build()?;
     let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
     let state = &mut SporeUniverse::new(font)?;
+
+    println!("Spore configuration:\n {:?}", state.spore_configs);
     event::run(ctx, event_loop, state)
 }

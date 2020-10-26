@@ -13,7 +13,6 @@ bincode does use Serde, but is more exactly what I'm looking for.
 explanation how to serialize, save to file, use buffered writer, use compression: [blog](https://peteris.rocks/blog/serialize-any-object-to-a-binary-format-in-rust/)
 
 ### Cross-compilation
-
 [General](https://rust-lang.github.io/rustup/cross-compilation.html)
 [Windows](https://stackoverflow.com/questions/31492799/cross-compile-a-rust-application-from-linux-to-windows)
 
@@ -31,17 +30,20 @@ For Linux:
 ```
 
 ## TODO
-* show tick: see piston examples > hello_world
-* spores don't work like in [video](https://www.youtube.com/watch?v=Z_zmZ23grXE)
-  * symmetric linear function
-  * variable distances for repulsion and force
-  * force function only depends on other spore's type, not on own type
-* scaling
-  * use rayon for parallel computing of force vectors
-  * acceleration structure
-    * divide universe in squares = buckets
-    * spores only interact with others in same bucket
+* config generation
+  * separate module
+  * pretty print config
+  * printed config must be immediately repluggable instead of randomly generated 
+  * from the [rust docs](https://doc.rust-lang.org/std/collections/struct.HashMap.html):
+  ```rust
+  use std::collections::HashMap;
+
+  let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)].iter().cloned().collect();
+  // use the values stored in map
+  ```
+* only show part of universe at a time for a larger universe
 * separation of concerns: simulation, serialization, deserialization, visualization
+  * see [bincode](https://github.com/servo/bincode)
   * simulating calculates forces and moves spores
   * positions are buffered as {type, coords, id} structs
   * serialiser serialises these and writes them to file
@@ -56,7 +58,11 @@ For Linux:
 
 * more particle types
 * non-linear force equations
-* symmetric vs asymmetric forces
+* scaling
+  * ☑️ use rayon for parallel computing of force vectors
+  * acceleration structure
+    * divide universe in squares = buckets
+    * spores only interact with others in same bucket
 
 ## DONE
 
@@ -75,9 +81,15 @@ For Linux:
   * ☑️ movement based on force
   * ☑️ friction: constant deceleration
   * ☑️ spores can work at small scale
-* ☑️ show fps
+* ☑️ show fps and tick
 * ☑️ increase fps to 60 by using mesh
 * ☑️ memory leak!
 * ☑️ forces (not just movements) must be able to wrap around
   * you can see that it doesn't if spores gather at the border of the window
   * solution: map coordinates to closest coordinates, according to x- and y-axis separately
+* ☑️ symmetric vs asymmetric forces
+  * conclusion: prefer symmetric
+* ☑️ spores don't work like in [video](https://www.youtube.com/watch?v=Z_zmZ23grXE)
+  * ☑️ symmetric linear function
+  * ☑️ variable distances for repulsion and force
+  * ☑️ force function only depends on other spore's type, not on own type
