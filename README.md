@@ -1,6 +1,7 @@
 # pycniospores
 
-AVERAGE FPS with 600 SPORES: 60 FPS
+Average FPS with 600 SPORES: 60 FPS.
+Suggestion: first do a `cargo build --release` before running it.
 
 ## Literature
 
@@ -30,6 +31,16 @@ For Linux:
 ```
 
 ## TODO
+
+* only show part of universe at a time for a larger universe
+  * ☑️ zoom in & out
+    * ☑️ show zoom
+    * ☑️ don't zoom outside of bounds
+  * ☑️ move view up, down, left, right
+    * ☑️ don't move outs
+  * zoom with touchpad
+  * move with drag mouse
+  * view is only part of the universe
 * config generation
   * separate module
   * pretty print config
@@ -41,7 +52,6 @@ For Linux:
   let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)].iter().cloned().collect();
   // use the values stored in map
   ```
-* only show part of universe at a time for a larger universe
 * separation of concerns: simulation, serialization, deserialization, visualization
   * see [bincode](https://github.com/servo/bincode)
   * simulating calculates forces and moves spores
@@ -54,7 +64,7 @@ For Linux:
       * option live
       * option simulate, then watch later
 
-## FUTURE
+## FUTURE / ALTERNATIVELY
 
 * more particle types
 * non-linear force equations
@@ -63,6 +73,9 @@ For Linux:
   * acceleration structure
     * divide universe in squares = buckets
     * spores only interact with others in same bucket
+* wrap-around
+  * either bound the position: self.position = min(self.position, WINDOW_HEIGHT - self.position)
+  * or use modulo arithmetics so that spore is always shown in view
 
 ## DONE
 

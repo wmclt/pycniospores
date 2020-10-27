@@ -2,10 +2,10 @@ use rand::{distributions::Standard, prelude::*};
 use rayon::prelude::*;
 use std::collections::HashMap;
 
-pub const WINDOW_HEIGHT: f32 = 1200.0; //800.0; //1200.0;
-pub const WINDOW_WIDTH: f32 = 1920.0; //1280.0; //1920.0;
+pub const WINDOW_HEIGHT: f32 = 800.0; //1200.0;
+pub const WINDOW_WIDTH: f32 = 1280.0; //1920.0
 
-const NUMBER_OF_SPORES: u16 = 350;
+const NUMBER_OF_SPORES: u16 = 300;
 
 const FRICTION: f32 = 0.94; // friction should be low!
 
@@ -14,10 +14,6 @@ const REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
 
 const DEFAULT_FORCE_REACH: f32 = 70.0; //70
 const DEFAULT_FORCE_AMPLITUDE: f32 = 0.12; //0.006
-
-// afgeleide gegevens
-// const NET_DEFAULT_FORCE_REACH: f32 = DEFAULT_FORCE_REACH - DEFAULT_REPULSION_DIST;
-// const HALF_NET_DEFAULT_FORCE_REACH: f32 = NET_DEFAULT_FORCE_REACH / 2.0;
 
 type SporeConfigs = HashMap<SporeType, SporeConfig>;
 
@@ -63,10 +59,10 @@ pub fn generate_spore_configs() -> SporeConfigs {
 
 fn generate_spore_config(rng: &mut ThreadRng) -> SporeConfig {
     SporeConfig {
-        repulsion_dist: rng.gen_range(0.3, 1.0) * DEFAULT_REPULSION_DIST,
-        force_factor: rng.gen_range(0.3, 1.0)
+        repulsion_dist: rng.gen_range(0.25, 1.0) * DEFAULT_REPULSION_DIST,
+        force_factor: rng.gen_range(0.25, 1.0)
             * DEFAULT_FORCE_AMPLITUDE
-            * if rng.gen_bool(0.5) { 1.0 } else { -1.0 },
+            * if rng.gen_bool(0.65) { 1.0 } else { -1.0 },
         force_reach: rng.gen_range(0.3, 1.0) * DEFAULT_FORCE_REACH,
     }
 }
