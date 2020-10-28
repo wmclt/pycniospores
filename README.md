@@ -41,17 +41,6 @@ For Linux:
   * zoom with touchpad
   * move with drag mouse
   * view is only part of the universe
-* config generation
-  * separate module
-  * pretty print config
-  * printed config must be immediately repluggable instead of randomly generated 
-  * from the [rust docs](https://doc.rust-lang.org/std/collections/struct.HashMap.html):
-  ```rust
-  use std::collections::HashMap;
-
-  let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)].iter().cloned().collect();
-  // use the values stored in map
-  ```
 * separation of concerns: simulation, serialization, deserialization, visualization
   * see [bincode](https://github.com/servo/bincode)
   * simulating calculates forces and moves spores
@@ -106,3 +95,14 @@ For Linux:
   * ☑️ symmetric linear function
   * ☑️ variable distances for repulsion and force
   * ☑️ force function only depends on other spore's type, not on own type
+*  ☑️ config generation
+  *  ☑️ separate module
+  *  ☑️ pretty print config
+  *  ☑️ printed config must be immediately repluggable instead of randomly generated 
+  *  ☑️ from the [rust docs](https://doc.rust-lang.org/std/collections/struct.HashMap.html):
+  ```rust
+  use std::collections::HashMap;
+
+  let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)].iter().cloned().collect();
+  // use the values stored in map
+  ```

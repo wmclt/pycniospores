@@ -16,11 +16,10 @@ use std::{
     path::{self, PathBuf},
 };
 
+pub mod generators;
 pub mod spore;
-use spore::{
-    generate_spore_configs, generate_spores, move_spores, Spore, SporeConfig, SporeType,
-    WINDOW_HEIGHT, WINDOW_WIDTH,
-};
+use generators::{generate_spore_configs, generate_spores};
+use spore::{move_spores, Spore, SporeConfig, SporeType, WINDOW_HEIGHT, WINDOW_WIDTH};
 
 const MAX_ZOOM: f32 = 2.0;
 const MIN_ZOOM: f32 = 1.0;
@@ -226,6 +225,36 @@ pub fn main() -> GameResult {
     let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
     let state = &mut SporeUniverse::new(font)?;
 
-    println!("Spore configuration:\n {:?}", state.spore_configs);
+    println!(
+        "\nWelcome to Pycniospores! A spores simulator.\n
+        ,\tto zoom in\n
+        .\tto zoom out\n
+        arrows\tto move around\n
+        esc\tto quit\n\n
+        Spore configuration:\n {}\n",
+        print_spore_configs(&state.spore_configs)
+    );
     event::run(ctx, event_loop, state)
+}
+
+fn print_spore_configs(spore_configs: &HashMap<SporeType, SporeConfig>) -> String {
+    let mut pretty_print = String::from("[");
+
+    let format = |st| {
+        format!(
+            "(SporeType::{:?},{:.2?}),",
+            st,
+            spore_configs.get(&st).unwrap()
+        )
+        .replace(" ", "")
+    };
+    pretty_print += &format(SporeType::One);
+    pretty_print += &format(SporeType::Two);
+    pretty_print += &format(SporeType::Three);
+    pretty_print += &format(SporeType::Four);
+    pretty_print += &format(SporeType::Five);
+    pretty_print += &format(SporeType::Six);
+
+    pretty_print += &"]";
+    pretty_print.to_string()
 }

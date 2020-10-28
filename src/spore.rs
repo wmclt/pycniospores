@@ -1,21 +1,20 @@
-use rand::{distributions::Standard, prelude::*};
 use rayon::prelude::*;
 use std::collections::HashMap;
 
 pub const WINDOW_HEIGHT: f32 = 800.0; //1200.0;
 pub const WINDOW_WIDTH: f32 = 1280.0; //1920.0
 
-const NUMBER_OF_SPORES: u16 = 300;
+// TODO put in config file
+pub const DEFAULT_REPULSION_DIST: f32 = 20.0; // Should be an absolute value.
+pub const DEFAULT_REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
+pub const DEFAULT_FORCE_AMPLITUDE: f32 = 0.12; //0.006
+pub const DEFAULT_FORCE_REACH: f32 = 70.0; //70
+
+pub const NUMBER_OF_SPORES: u16 = 300;
 
 const FRICTION: f32 = 0.94; // friction should be low!
 
-const DEFAULT_REPULSION_DIST: f32 = 20.0; // Should be an absolute value.
-const REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
-
-const DEFAULT_FORCE_REACH: f32 = 70.0; //70
-const DEFAULT_FORCE_AMPLITUDE: f32 = 0.12; //0.006
-
-type SporeConfigs = HashMap<SporeType, SporeConfig>;
+pub type SporeConfigs = HashMap<SporeType, SporeConfig>;
 
 pub struct Spore {
     pub id: u16,
@@ -36,71 +35,11 @@ pub enum SporeType {
     Six,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct SporeConfig {
-    repulsion_dist: f32,
-    force_factor: f32,
-    force_reach: f32,
-}
-
-pub fn generate_spore_configs() -> SporeConfigs {
-    let mut rng = rand::thread_rng();
-    let mut configs = HashMap::new();
-
-    configs.insert(SporeType::One, generate_spore_config(&mut rng));
-    configs.insert(SporeType::Two, generate_spore_config(&mut rng));
-    configs.insert(SporeType::Three, generate_spore_config(&mut rng));
-    configs.insert(SporeType::Four, generate_spore_config(&mut rng));
-    configs.insert(SporeType::Five, generate_spore_config(&mut rng));
-    configs.insert(SporeType::Six, generate_spore_config(&mut rng));
-
-    configs
-}
-
-fn generate_spore_config(rng: &mut ThreadRng) -> SporeConfig {
-    SporeConfig {
-        repulsion_dist: rng.gen_range(0.25, 1.0) * DEFAULT_REPULSION_DIST,
-        force_factor: rng.gen_range(0.25, 1.0)
-            * DEFAULT_FORCE_AMPLITUDE
-            * if rng.gen_bool(0.65) { 1.0 } else { -1.0 },
-        force_reach: rng.gen_range(0.3, 1.0) * DEFAULT_FORCE_REACH,
-    }
-}
-
-pub fn generate_spores() -> Vec<Spore> {
-    let mut results = Vec::new();
-    let mut rng = rand::thread_rng();
-
-    for id in 0..NUMBER_OF_SPORES {
-        let x_coord: f32 = rng.gen_range(0.0, WINDOW_WIDTH);
-        let y_coord: f32 = rng.gen_range(0.0, WINDOW_HEIGHT);
-        let x_speed: f32 = 0.0;
-        let y_speed: f32 = 0.0;
-
-        results.push(new_spore(
-            id,
-            x_coord,
-            y_coord,
-            x_speed,
-            y_speed,
-            rand::random(),
-        ));
-    }
-    results
-}
-
-impl Distribution<SporeType> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> SporeType {
-        match rng.gen_range(0, 6) {
-            0 => SporeType::One,
-            1 => SporeType::Two,
-            2 => SporeType::Three,
-            3 => SporeType::Four,
-            4 => SporeType::Five,
-            5 => SporeType::Six,
-            _ => panic!("woups"),
-        }
-    }
+    pub repulsion_dist: f32,
+    pub force_factor: f32,
+    pub force_reach: f32,
 }
 
 pub fn new_spore(
@@ -213,9 +152,9 @@ pub fn calculate_force(spore_configs: &SporeConfigs, other: &Spore, dist: Dist) 
     // if too close: acceleration away
     let repulsion_dist = get_repulsion_dist(spore_configs, &other.spore_type);
     if dist.tot_dist < repulsion_dist {
-        let repulsion_force = (dist.tot_dist - repulsion_dist).powi(2) * REPULSION_AMPLITUDE
-            / repulsion_dist
-            / repulsion_dist;
+        let repulsion_force = (dist.tot_dist - repulsion_dist).powi(2)
+            * DEFAULT_REPULSION_AMPLITUDE
+            / repulsion_dist.powi(2);
 
         return Force {
             x_force: repulsion_force * dist.x_dist,
