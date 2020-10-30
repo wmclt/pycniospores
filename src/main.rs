@@ -23,11 +23,12 @@ use spore::{move_spores, Spore, SporeConfig, SporeType, WINDOW_HEIGHT, WINDOW_WI
 
 const MAX_ZOOM: f32 = 2.0;
 const MIN_ZOOM: f32 = 1.0;
-const ZOOM_SPEED: f32 = 0.02;
-const MOVE_INCREMENT: f32 = 30.0;
+const ZOOM_SPEED: f32 = 0.03;
+const MOVE_INCREMENT: f32 = 40.0;
 
 struct SporeUniverse {
     font: Font,
+    paused: bool,
     tick: u32,
     spore_configs: HashMap<SporeType, SporeConfig>,
     spores: Vec<Spore>,
@@ -39,6 +40,7 @@ impl SporeUniverse {
     fn new(font: Font) -> GameResult<SporeUniverse> {
         let s = SporeUniverse {
             font,
+            paused: false,
             tick: 0,
             spore_configs: generate_spore_configs(),
             spores: generate_spores(),
@@ -51,8 +53,10 @@ impl SporeUniverse {
 
 impl event::EventHandler for SporeUniverse {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
-        move_spores(&self.spore_configs, &mut self.spores);
-        self.tick += 1;
+        if !self.paused {
+            move_spores(&self.spore_configs, &mut self.spores);
+            self.tick += 1;
+        }
         Ok(())
     }
 
@@ -67,6 +71,9 @@ impl event::EventHandler for SporeUniverse {
             KeyCode::Escape => {
                 quit(ctx);
             }
+            KeyCode::Space => {
+                self.paused = !self.paused;
+            }
             KeyCode::Comma => {
                 //zoom in
                 self.zoom = f32::min(MAX_ZOOM, self.zoom * (1.0 + ZOOM_SPEED));
@@ -78,11 +85,11 @@ impl event::EventHandler for SporeUniverse {
                 // replace within bounds
                 self.view_position.x = f32::max(
                     self.view_position.x,
-                    -WINDOW_WIDTH * (1.0 - (1.0 / self.zoom)),
+                    -WINDOW_WIDTH * (self.zoom - 1.0),
                 );
                 self.view_position.y = f32::max(
                     self.view_position.y,
-                    -WINDOW_HEIGHT * (1.0 - (1.0 / self.zoom)),
+                    -WINDOW_HEIGHT * (self.zoom - 1.0),
                 );
             }
             KeyCode::Up => {
@@ -96,14 +103,14 @@ impl event::EventHandler for SporeUniverse {
                 // within bounds
                 self.view_position.y = f32::max(
                     self.view_position.y - MOVE_INCREMENT,
-                    -WINDOW_HEIGHT * (1.0 - (1.0 / self.zoom)),
+                    -WINDOW_HEIGHT * (self.zoom - 1.0),
                 );
             }
             KeyCode::Right => {
                 // within bounds
                 self.view_position.x = f32::max(
                     self.view_position.x - MOVE_INCREMENT,
-                    -WINDOW_WIDTH * (1.0 - (1.0 / self.zoom)),
+                    -WINDOW_WIDTH * (self.zoom - 1.0)
                 );
             }
             KeyCode::Left => {
@@ -230,8 +237,9 @@ pub fn main() -> GameResult {
         ,\tto zoom in\n
         .\tto zoom out\n
         arrows\tto move around\n
+        space\tto pause\n
         esc\tto quit\n\n
-        Spore configuration:\n {}\n",
+        Spore configuration:\n\n {}\n",
         print_spore_configs(&state.spore_configs)
     );
     event::run(ctx, event_loop, state)

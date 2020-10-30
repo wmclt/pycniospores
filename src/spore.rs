@@ -10,7 +10,7 @@ pub const DEFAULT_REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
 pub const DEFAULT_FORCE_AMPLITUDE: f32 = 0.12; //0.006
 pub const DEFAULT_FORCE_REACH: f32 = 70.0; //70
 
-pub const NUMBER_OF_SPORES: u16 = 300;
+pub const NUMBER_OF_SPORES: u16 = 450;
 
 const FRICTION: f32 = 0.94; // friction should be low!
 

@@ -80,49 +80,49 @@ fn get_previous_config() -> SporeConfigs {
         (
             SporeType::One,
             SporeConfig {
-                repulsion_dist: 5.78,
-                force_factor: 0.03,
-                force_reach: 62.78,
+                repulsion_dist: 9.82,
+                force_factor: 0.08,
+                force_reach: 27.41,
             },
         ),
         (
             SporeType::Two,
             SporeConfig {
-                repulsion_dist: 15.26,
-                force_factor: 0.04,
-                force_reach: 39.70,
+                repulsion_dist: 5.97,
+                force_factor: -0.04,
+                force_reach: 58.38,
             },
         ),
         (
             SporeType::Three,
             SporeConfig {
-                repulsion_dist: 10.20,
+                repulsion_dist: 9.16,
                 force_factor: 0.06,
-                force_reach: 41.02,
+                force_reach: 38.75,
             },
         ),
         (
             SporeType::Four,
             SporeConfig {
-                repulsion_dist: 9.32,
-                force_factor: 0.08,
-                force_reach: 31.57,
+                repulsion_dist: 17.59,
+                force_factor: 0.07,
+                force_reach: 36.55,
             },
         ),
         (
             SporeType::Five,
             SporeConfig {
-                repulsion_dist: 16.29,
-                force_factor: 0.04,
-                force_reach: 54.99,
+                repulsion_dist: 17.57,
+                force_factor: 0.10,
+                force_reach: 52.39,
             },
         ),
         (
             SporeType::Six,
             SporeConfig {
-                repulsion_dist: 11.90,
-                force_factor: 0.12,
-                force_reach: 49.15,
+                repulsion_dist: 5.08,
+                force_factor: -0.08,
+                force_reach: 65.82,
             },
         ),
     ]

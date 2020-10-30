@@ -33,14 +33,16 @@ For Linux:
 ## TODO
 
 * only show part of universe at a time for a larger universe
-  * ☑️ zoom in & out
-    * ☑️ show zoom
-    * ☑️ don't zoom outside of bounds
-  * ☑️ move view up, down, left, right
-    * ☑️ don't move outs
-  * zoom with touchpad
-  * move with drag mouse
-  * view is only part of the universe
+  * distinction: _view_ is only __part__ of the _universe_
+* additional keys
+  * F for fullscreen?
+  * zoom with touchpad 
+  * zoom with mousewheel
+  * move with drag
+* smooth zoom and scroll
+  * work with keyup _and_ keydown
+  * work with viewstate: STATIC, LEFT, RIGHT, UP, DOWN, ZOOMING_IN, ZOOMING_OUT
+* keys to speed up and speed down?
 * separation of concerns: simulation, serialization, deserialization, visualization
   * see [bincode](https://github.com/servo/bincode)
   * simulating calculates forces and moves spores
@@ -106,3 +108,10 @@ For Linux:
   let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)].iter().cloned().collect();
   // use the values stored in map
   ```
+ * ☑️ zoom
+  * ☑️ show zoom
+  * ☑️ don't zoom outside of bounds
+  * ☑️ zoom CORRECTLY!
+* ☑️ move view up, down, left, right
+  * ☑️ don't move out of bounds
+* ☑️ SPACE to pause
