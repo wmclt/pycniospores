@@ -8,10 +8,29 @@ Suggestion: first do a `cargo build --release` before running it.
 ### About scaling: views
 [guide about scaling](https://www.sfml-dev.org/tutorials/2.5/graphics-view.php)
 
-### About (de)serialisation: servo/bincode
+### Storing state
 [repo of bincode](https://github.com/servo/bincode)
 bincode does use Serde, but is more exactly what I'm looking for.
 explanation how to serialize, save to file, use buffered writer, use compression: [blog](https://peteris.rocks/blog/serialize-any-object-to-a-binary-format-in-rust/)
+
+Not sure is (de)serialsation is exactly what I want though: maybe I also need __compression__.
+With only serialisation (bincode), the storage would look like this:
+
+```
+1  spore: 
+u32 + u16 + f32 + f32 + f32 + f32
+4 B + 4 B + 4 B + 4 B + 4 B + 4 B = 24 B
+
+2000 spores:
+2000 * 24 B = 48 kB
+
+1000 generations:
+1000 * 48 kB = 48 MB
+```
+
+And yet the data should be relatively easy to compress.
+
+Suggestion: [Snap by Gorhill](https://lib.rs/crates/snap)
 
 ### Cross-compilation
 [General](https://rust-lang.github.io/rustup/cross-compilation.html)
@@ -35,10 +54,12 @@ For Linux:
 * performance
   * ☑️ the loop in calculate_forces() should do as little as possible!!
     * ☑️ remove the triple filter -> __BIG improvement!__
-    * don't filter out if too far: just force = 0
+    * ☑️ don't filter out if too far: just force = 0 -> decrease in performance!
   * ☑️ use Vec::with_capacity(usize) instead of Vec::new()
   * ☑️ use crayon for apply_forces()
+  * testing: don't move the spores
   * put force_reach in calibrated_dist
+  * put repulsion_dist in calibrated_dist
 * only show part of universe at a time for a larger universe
   * distinction: _view_ is only __part__ of the _universe_
 * use config file

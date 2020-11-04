@@ -1,8 +1,8 @@
 use rayon::prelude::*;
 use std::collections::HashMap;
 
-pub const WINDOW_HEIGHT: f32 = 800.0; //1200.0;
-pub const WINDOW_WIDTH: f32 = 1280.0; //1920.0
+pub const WINDOW_HEIGHT: f32 = 800.0; 
+pub const WINDOW_WIDTH: f32 = 1280.0; 
 
 // TODO put in config file
 pub const DEFAULT_REPULSION_DIST: f32 = 20.0; // Should be an absolute value.
@@ -103,10 +103,13 @@ pub fn calculate_forces(spore_configs: &SporeConfigs, spore: &Spore, spores: &Ve
         .map(|other| to_calibrated_dist(other, spore))
         .filter(|(other, dist)| dist.tot_dist <= get_force_reach(spore_configs, &other.spore_type))
         .map(|(other, dist)| calculate_force(spore_configs, &other, dist))
-        .reduce(|| zero_force(), |force, next_force| Force {
-            x_force: force.x_force + next_force.x_force,
-            y_force: force.y_force + next_force.y_force,
-        })
+        .reduce(
+            || ZERO_FORCE,
+            |force, next_force| Force {
+                x_force: force.x_force + next_force.x_force,
+                y_force: force.y_force + next_force.y_force,
+            },
+        )
 }
 
 fn to_calibrated_dist<'a>(other: &'a Spore, spore: &Spore) -> (&'a Spore, Dist) {
@@ -136,12 +139,10 @@ fn to_calibrated_dist<'a>(other: &'a Spore, spore: &Spore) -> (&'a Spore, Dist) 
     )
 }
 
-fn zero_force() -> Force {
-    Force {
-        x_force: 0.0,
-        y_force: 0.0,
-    }
-}
+const ZERO_FORCE: Force = Force {
+    x_force: 0.0,
+    y_force: 0.0,
+};
 
 pub fn calculate_force(spore_configs: &SporeConfigs, other: &Spore, dist: Dist) -> Force {
     // if too close: acceleration away
@@ -151,13 +152,13 @@ pub fn calculate_force(spore_configs: &SporeConfigs, other: &Spore, dist: Dist) 
             * DEFAULT_REPULSION_AMPLITUDE
             / repulsion_dist.powi(2);
 
-        return Force {
+        Force {
             x_force: repulsion_force * dist.x_dist,
             y_force: repulsion_force * dist.y_dist,
-        };
+        }
+    } else {
+        scale_force(&spore_configs, &other.spore_type, dist)
     }
-
-    scale_force(&spore_configs, &other.spore_type, dist)
 }
 
 fn get_repulsion_dist(spore_configs: &SporeConfigs, spore_type: &SporeType) -> f32 {
