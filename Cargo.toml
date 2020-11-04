@@ -4,10 +4,17 @@ version = "0.1.0"
 authors = ["William Mclt <william.mauclet+gitlab@gmail.com>"]
 edition = "2018"
 readme = "README.md"
+repository = "https://gitlab.com/wmclt/pycniospores"
+description = "A particles-based simulation tool to research the possibility of 2D virtual abiogenesis."
+keywords = ["simulation"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 ggez = "0.5.1"
 rand = "0.7.3"
-rayon = "1.4.1"
+rayon = "1.5.0"
+
+[profile.dev]
+opt-level = 1
+overflow-checks = false

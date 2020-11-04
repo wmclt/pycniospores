@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use rand::{distributions::Standard, prelude::*};
 
 use crate::spore::{
@@ -13,7 +12,7 @@ pub fn generate_spore_configs() -> SporeConfigs {
 
     // TODO move to config
     // decide here whether to generate random configs
-    let randomly = true;
+    let randomly = false;
     if randomly {
         configs.insert(SporeType::One, generate_spore_config(&mut rng));
         configs.insert(SporeType::Two, generate_spore_config(&mut rng));
@@ -39,7 +38,7 @@ fn generate_spore_config(rng: &mut ThreadRng) -> SporeConfig {
 }
 
 pub fn generate_spores() -> Vec<Spore> {
-    let mut results = Vec::new();
+    let mut results = Vec::with_capacity(NUMBER_OF_SPORES as usize);
     let mut rng = rand::thread_rng();
 
     for id in 0..NUMBER_OF_SPORES {

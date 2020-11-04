@@ -69,7 +69,6 @@ pub fn new_spore(
 // 2. apply
 //      3. update speeds: apply forces + friction to speeds
 //      4. move according to speed
-// TODO use spore_configs
 pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut Vec<Spore>) {
     let forces: Vec<Force> = spores
         .par_iter()
@@ -99,16 +98,12 @@ fn get_force_reach(spore_configs: &SporeConfigs, spore_type: &SporeType) -> f32 
 
 pub fn calculate_forces(spore_configs: &SporeConfigs, spore: &Spore, spores: &Vec<Spore>) -> Force {
     spores
-        .iter()
+        .par_iter()
         .filter(|&other| spore.id != other.id)
         .map(|other| to_calibrated_dist(other, spore))
-        .filter(|(other, dist)| {
-            dist.x_dist <= get_force_reach(spore_configs, &other.spore_type)
-                && dist.y_dist <= get_force_reach(spore_configs, &other.spore_type)
-        })
         .filter(|(other, dist)| dist.tot_dist <= get_force_reach(spore_configs, &other.spore_type))
         .map(|(other, dist)| calculate_force(spore_configs, &other, dist))
-        .fold(zero_force(), |force, next_force| Force {
+        .reduce(|| zero_force(), |force, next_force| Force {
             x_force: force.x_force + next_force.x_force,
             y_force: force.y_force + next_force.y_force,
         })

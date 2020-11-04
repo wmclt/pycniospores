@@ -32,13 +32,22 @@ For Linux:
 
 ## TODO
 
+* performance
+  * ☑️ the loop in calculate_forces() should do as little as possible!!
+    * ☑️ remove the triple filter -> __BIG improvement!__
+    * don't filter out if too far: just force = 0
+  * ☑️ use Vec::with_capacity(usize) instead of Vec::new()
+  * ☑️ use crayon for apply_forces()
+  * put force_reach in calibrated_dist
 * only show part of universe at a time for a larger universe
   * distinction: _view_ is only __part__ of the _universe_
+* use config file
 * additional keys
   * F for fullscreen?
   * zoom with touchpad 
   * zoom with mousewheel
   * move with drag
+* additional fields in Cargo.toml: https://doc.rust-lang.org/cargo/reference/manifest.html
 * smooth zoom and scroll
   * work with keyup _and_ keydown
   * work with viewstate: STATIC, LEFT, RIGHT, UP, DOWN, ZOOMING_IN, ZOOMING_OUT
@@ -54,6 +63,9 @@ For Linux:
     * maybe two options:
       * option live
       * option simulate, then watch later
+* cross-platform
+  * to linux
+  * statically to MacOS
 
 ## FUTURE / ALTERNATIVELY
 
