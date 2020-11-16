@@ -24,13 +24,15 @@ u32 + u16 + f32 + f32 + f32 + f32
 2000 spores:
 2000 * 24 B = 48 kB
 
-1000 generations:
-1000 * 48 kB = 48 MB
+550.000 ticks with 1/100 measurements:
+1000 * 48 kB / 100 = 268,8 MB
 ```
 
 And yet the data should be relatively easy to compress.
 
 Suggestion: [Snap by Gorhill](https://lib.rs/crates/snap)
+
+Btw: maybe only record every 10 / 20 ticks! 
 
 ### Cross-compilation
 [General](https://rust-lang.github.io/rustup/cross-compilation.html)
@@ -52,23 +54,16 @@ For Linux:
 ## TODO
 
 * performance
-  * ☑️ the loop in calculate_forces() should do as little as possible!!
-    * ☑️ remove the triple filter -> __BIG improvement!__
-    * ☑️ don't filter out if too far: just force = 0 -> decrease in performance!
-  * ☑️ use Vec::with_capacity(usize) instead of Vec::new()
-  * ☑️ use crayon for apply_forces()
   * testing: don't move the spores
   * put force_reach in calibrated_dist
   * put repulsion_dist in calibrated_dist
-* only show part of universe at a time for a larger universe
-  * distinction: _view_ is only __part__ of the _universe_
-* use config file
+* zoom to the centre, not top left
 * additional keys
   * F for fullscreen?
   * zoom with touchpad 
   * zoom with mousewheel
   * move with drag
-* additional fields in Cargo.toml: https://doc.rust-lang.org/cargo/reference/manifest.html
+* use config file
 * smooth zoom and scroll
   * work with keyup _and_ keydown
   * work with viewstate: STATIC, LEFT, RIGHT, UP, DOWN, ZOOMING_IN, ZOOMING_OUT
@@ -148,3 +143,13 @@ For Linux:
 * ☑️ move view up, down, left, right
   * ☑️ don't move out of bounds
 * ☑️ SPACE to pause
+* ☑️ additional fields in Cargo.toml: https://doc.rust-lang.org/cargo/reference/manifest.html
+* ☑️ performance
+  * ☑️ the loop in calculate_forces() should do as little as possible!!
+    * ☑️ remove the triple filter -> __BIG improvement!__
+    * ☑️ don't filter out if too far: just force = 0 -> decrease in performance!
+  * ☑️ use Vec::with_capacity(usize) instead of Vec::new()
+  * ☑️ use crayon for apply_forces()
+* ☑️ only show part of universe at a time for a larger universe
+  * ☑️ distinction: _view_ is only __part__ of the _universe_
+  * ☑️ bound-checking (zoom or move) should still work

@@ -3,7 +3,7 @@ use rand::{distributions::Standard, prelude::*};
 
 use crate::spore::{
     new_spore, Spore, SporeConfig, SporeConfigs, SporeType, DEFAULT_FORCE_AMPLITUDE,
-    DEFAULT_FORCE_REACH, DEFAULT_REPULSION_DIST, NUMBER_OF_SPORES, WINDOW_HEIGHT, WINDOW_WIDTH,
+    DEFAULT_FORCE_REACH, DEFAULT_REPULSION_DIST, NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
 };
 
 pub fn generate_spore_configs() -> SporeConfigs {
@@ -42,8 +42,8 @@ pub fn generate_spores() -> Vec<Spore> {
     let mut rng = rand::thread_rng();
 
     for id in 0..NUMBER_OF_SPORES {
-        let x_coord: f32 = rng.gen_range(0.0, WINDOW_WIDTH);
-        let y_coord: f32 = rng.gen_range(0.0, WINDOW_HEIGHT);
+        let x_coord: f32 = rng.gen_range(0.0, UNIVERSE_WIDTH);
+        let y_coord: f32 = rng.gen_range(0.0, UNIVERSE_HEIGHT);
         let x_speed: f32 = 0.0;
         let y_speed: f32 = 0.0;
 

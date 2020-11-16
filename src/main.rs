@@ -19,10 +19,14 @@ use std::{
 pub mod generators;
 pub mod spore;
 use generators::{generate_spore_configs, generate_spores};
-use spore::{move_spores, Spore, SporeConfig, SporeType, WINDOW_HEIGHT, WINDOW_WIDTH};
+use spore::{move_spores, Spore, SporeConfig, SporeType, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
+
+
+const HEIGHT_RATIO: f32 =  WINDOW_HEIGHT / UNIVERSE_HEIGHT;
+const WIDTH_RATIO: f32 =  WINDOW_WIDTH / UNIVERSE_WIDTH;
 
 const MAX_ZOOM: f32 = 2.0;
-const MIN_ZOOM: f32 = 1.0;
+const MIN_ZOOM: f32 = HEIGHT_RATIO; // 1.0 Ideally should be const fn f32::min(HEIGHT_RATIO, WIDTH_RATIO)
 const ZOOM_SPEED: f32 = 0.03;
 const MOVE_INCREMENT: f32 = 40.0;
 
@@ -83,13 +87,13 @@ impl event::EventHandler for SporeUniverse {
                 self.zoom = f32::max(MIN_ZOOM, self.zoom * (1.0 - ZOOM_SPEED));
 
                 // replace within bounds
-                self.view_position.x = f32::max(
-                    self.view_position.x,
-                    -WINDOW_WIDTH * (self.zoom - 1.0),
-                );
                 self.view_position.y = f32::max(
                     self.view_position.y,
-                    -WINDOW_HEIGHT * (self.zoom - 1.0),
+                    -UNIVERSE_HEIGHT * (self.zoom - HEIGHT_RATIO),
+                );
+                self.view_position.x = f32::max(
+                    self.view_position.x,
+                    -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO),
                 );
             }
             KeyCode::Up => {
@@ -103,14 +107,14 @@ impl event::EventHandler for SporeUniverse {
                 // within bounds
                 self.view_position.y = f32::max(
                     self.view_position.y - MOVE_INCREMENT,
-                    -WINDOW_HEIGHT * (self.zoom - 1.0),
+                    -UNIVERSE_HEIGHT * (self.zoom - HEIGHT_RATIO),
                 );
             }
             KeyCode::Right => {
                 // within bounds
                 self.view_position.x = f32::max(
                     self.view_position.x - MOVE_INCREMENT,
-                    -WINDOW_WIDTH * (self.zoom - 1.0)
+                    -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO)
                 );
             }
             KeyCode::Left => {
@@ -216,6 +220,9 @@ fn get_resource_dir() -> PathBuf {
         path::PathBuf::from("./resources")
     }
 }
+
+const WINDOW_HEIGHT: f32 = 800.0; 
+const WINDOW_WIDTH: f32 = 1280.0; 
 
 pub fn main() -> GameResult {
     let cb = ggez::ContextBuilder::new("pycniospores", "william mclt")

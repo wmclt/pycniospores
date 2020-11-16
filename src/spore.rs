@@ -1,8 +1,8 @@
 use rayon::prelude::*;
 use std::collections::HashMap;
 
-pub const WINDOW_HEIGHT: f32 = 800.0; 
-pub const WINDOW_WIDTH: f32 = 1280.0; 
+pub const UNIVERSE_HEIGHT: f32 = 1600.0; 
+pub const UNIVERSE_WIDTH: f32 = 2560.0; 
 
 // TODO put in config file
 pub const DEFAULT_REPULSION_DIST: f32 = 20.0; // Should be an absolute value.
@@ -10,7 +10,7 @@ pub const DEFAULT_REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
 pub const DEFAULT_FORCE_AMPLITUDE: f32 = 0.12; //0.006
 pub const DEFAULT_FORCE_REACH: f32 = 70.0; //70
 
-pub const NUMBER_OF_SPORES: u16 = 450;
+pub const NUMBER_OF_SPORES: u16 = 2000;
 
 const FRICTION: f32 = 0.94; // friction should be low!
 
@@ -117,13 +117,13 @@ fn to_calibrated_dist<'a>(other: &'a Spore, spore: &Spore) -> (&'a Spore, Dist) 
     let uncalibrated_y_dist = other.y_coord - spore.y_coord;
 
     // recalibrate to account for wrap-around
-    let x_dist = if uncalibrated_x_dist.abs() >= WINDOW_WIDTH - DEFAULT_FORCE_REACH {
-        uncalibrated_x_dist - WINDOW_WIDTH * uncalibrated_x_dist.signum()
+    let x_dist = if uncalibrated_x_dist.abs() >= UNIVERSE_WIDTH - DEFAULT_FORCE_REACH {
+        uncalibrated_x_dist - UNIVERSE_WIDTH * uncalibrated_x_dist.signum()
     } else {
         uncalibrated_x_dist
     };
-    let y_dist = if uncalibrated_y_dist.abs() >= WINDOW_HEIGHT - DEFAULT_FORCE_REACH {
-        uncalibrated_y_dist - WINDOW_HEIGHT * uncalibrated_y_dist.signum()
+    let y_dist = if uncalibrated_y_dist.abs() >= UNIVERSE_HEIGHT - DEFAULT_FORCE_REACH {
+        uncalibrated_y_dist - UNIVERSE_HEIGHT * uncalibrated_y_dist.signum()
     } else {
         uncalibrated_y_dist
     };
@@ -191,6 +191,6 @@ fn apply_force_and_move(spore: &mut Spore, force: &Force) {
     let new_x_coord = spore.x_coord + spore.x_speed;
     let new_y_coord = spore.y_coord + spore.y_speed;
 
-    spore.x_coord = (((new_x_coord) % WINDOW_WIDTH) + WINDOW_WIDTH) % WINDOW_WIDTH;
-    spore.y_coord = ((new_y_coord % WINDOW_HEIGHT) + WINDOW_HEIGHT) % WINDOW_HEIGHT;
+    spore.x_coord = (((new_x_coord) % UNIVERSE_WIDTH) + UNIVERSE_WIDTH) % UNIVERSE_WIDTH;
+    spore.y_coord = ((new_y_coord % UNIVERSE_HEIGHT) + UNIVERSE_HEIGHT) % UNIVERSE_HEIGHT;
 }
