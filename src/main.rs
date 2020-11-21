@@ -21,9 +21,11 @@ pub mod spore;
 use generators::{generate_spore_configs, generate_spores};
 use spore::{move_spores, Spore, SporeConfig, SporeType, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
 
+#[global_allocator]
+static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
-const HEIGHT_RATIO: f32 =  WINDOW_HEIGHT / UNIVERSE_HEIGHT;
-const WIDTH_RATIO: f32 =  WINDOW_WIDTH / UNIVERSE_WIDTH;
+const HEIGHT_RATIO: f32 = WINDOW_HEIGHT / UNIVERSE_HEIGHT;
+const WIDTH_RATIO: f32 = WINDOW_WIDTH / UNIVERSE_WIDTH;
 
 const MAX_ZOOM: f32 = 2.0;
 const MIN_ZOOM: f32 = HEIGHT_RATIO; // 1.0 Ideally should be const fn f32::min(HEIGHT_RATIO, WIDTH_RATIO)
@@ -114,7 +116,7 @@ impl event::EventHandler for SporeUniverse {
                 // within bounds
                 self.view_position.x = f32::max(
                     self.view_position.x - MOVE_INCREMENT,
-                    -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO)
+                    -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO),
                 );
             }
             KeyCode::Left => {
@@ -221,8 +223,8 @@ fn get_resource_dir() -> PathBuf {
     }
 }
 
-const WINDOW_HEIGHT: f32 = 800.0; 
-const WINDOW_WIDTH: f32 = 1280.0; 
+const WINDOW_HEIGHT: f32 = 800.0;
+const WINDOW_WIDTH: f32 = 1280.0;
 
 pub fn main() -> GameResult {
     let cb = ggez::ContextBuilder::new("pycniospores", "william mclt")

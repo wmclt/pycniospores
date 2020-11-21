@@ -10,7 +10,7 @@ pub const DEFAULT_REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
 pub const DEFAULT_FORCE_AMPLITUDE: f32 = 0.12; //0.006
 pub const DEFAULT_FORCE_REACH: f32 = 70.0; //70
 
-pub const NUMBER_OF_SPORES: u16 = 2000;
+pub const NUMBER_OF_SPORES: u16 = 3000;
 
 const FRICTION: f32 = 0.94; // friction should be low!
 
@@ -61,12 +61,8 @@ pub fn new_spore(
 }
 
 //  TWO loops
-//  1. calculate
-//      b. find neighbours close enough
-//          * square filter
-//          * round filter
-//      c. calculate forces
-// 2. apply
+//  1. calculate forces
+//  2. apply forces
 //      3. update speeds: apply forces + friction to speeds
 //      4. move according to speed
 pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut Vec<Spore>) {
@@ -96,15 +92,16 @@ fn get_force_reach(spore_configs: &SporeConfigs, spore_type: &SporeType) -> f32 
     spore_configs.get(&spore_type).unwrap().force_reach
 }
 
+// parallellizing with crayon slows this function down!
 pub fn calculate_forces(spore_configs: &SporeConfigs, spore: &Spore, spores: &Vec<Spore>) -> Force {
     spores
-        .par_iter()
+        .iter()
         .filter(|&other| spore.id != other.id)
         .map(|other| to_calibrated_dist(other, spore))
         .filter(|(other, dist)| dist.tot_dist <= get_force_reach(spore_configs, &other.spore_type))
         .map(|(other, dist)| calculate_force(spore_configs, &other, dist))
-        .reduce(
-            || ZERO_FORCE,
+        .fold( 
+            ZERO_FORCE,
             |force, next_force| Force {
                 x_force: force.x_force + next_force.x_force,
                 y_force: force.y_force + next_force.y_force,
