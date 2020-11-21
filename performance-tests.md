@@ -9,3 +9,11 @@ n       y       y           14
 n       y       n           20.4
 n       n       y           5.8
 n       n       n           5.5
+
+# tests array vs vec
+## array
+max 36 fps
+min 30 fps
+## vec   <------
+max 39
+min 33
