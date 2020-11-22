@@ -54,9 +54,11 @@ For Linux:
 ## TODO
 
 * performance
-  * testing: don't move the spores
+  * ☑️ testing: don't move the spores
   * put force_reach in calibrated_dist
   * put repulsion_dist in calibrated_dist
+* implement operators for Point or Force
+* try out [data oriented design](http://jamesmcm.github.io/blog/2020/07/25/intro-dod/#en)
 * zoom to the centre, not top left
 * additional keys
   * F for fullscreen?
