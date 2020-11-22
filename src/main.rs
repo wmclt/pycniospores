@@ -16,8 +16,9 @@ use std::{
     path::{self, PathBuf},
 };
 
-pub mod generators;
-pub mod spore;
+mod generators;
+mod spore;
+mod vector;
 use generators::{generate_spore_configs, generate_spores};
 use spore::{move_spores, Spore, SporeConfig, SporeType, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
 
@@ -147,7 +148,7 @@ fn draw_spores(ctx: &mut Context, universe: &SporeUniverse) -> GameResult {
     for spore in &universe.spores {
         mesh_builder.circle(
             graphics::DrawMode::fill(),
-            na::Point2::new(spore.x_coord, spore.y_coord),
+            na::Point2::new(spore.position.x, spore.position.y),
             4.0,
             0.01,
             get_color(spore.spore_type),
@@ -191,7 +192,7 @@ fn show_numbers(
                 timer::time_since_start(ctx).as_secs(),
                 timer::fps(ctx),
                 tick,
-                (tick as f32)/ timer::time_since_start(ctx).as_secs_f32(),
+                (tick as f32) / timer::time_since_start(ctx).as_secs_f32(),
                 zoom,
                 position,
             ),

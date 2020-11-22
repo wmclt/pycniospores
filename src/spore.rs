@@ -1,8 +1,10 @@
 use rayon::prelude::*;
 use std::collections::HashMap;
 
-pub const UNIVERSE_HEIGHT: f32 = 1600.0; 
-pub const UNIVERSE_WIDTH: f32 = 2560.0; 
+use crate::vector::Vector;
+
+pub const UNIVERSE_HEIGHT: f32 = 1600.0;
+pub const UNIVERSE_WIDTH: f32 = 2560.0;
 
 // TODO put in config file
 pub const DEFAULT_REPULSION_DIST: f32 = 20.0; // Should be an absolute value.
@@ -18,10 +20,8 @@ pub type SporeConfigs = HashMap<SporeType, SporeConfig>;
 
 pub struct Spore {
     pub id: u16,
-    pub x_coord: f32,
-    pub y_coord: f32,
-    x_speed: f32,
-    y_speed: f32,
+    pub position: Vector,
+    pub speed: Vector,
     pub spore_type: SporeType,
 }
 
@@ -52,10 +52,14 @@ pub fn new_spore(
 ) -> Spore {
     Spore {
         id,
-        x_coord,
-        y_coord,
-        x_speed,
-        y_speed,
+        position: Vector {
+            x: x_coord,
+            y: y_coord,
+        },
+        speed: Vector {
+            x: x_speed,
+            y: y_speed,
+        },
         spore_type,
     }
 }
@@ -66,7 +70,7 @@ pub fn new_spore(
 //      3. update speeds: apply forces + friction to speeds
 //      4. move according to speed
 pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut Vec<Spore>) {
-    let forces: Vec<Force> = spores
+    let forces: Vec<Vector> = spores
         .par_iter()
         .map(|spore| calculate_forces(&spore_configs, &spore, &spores))
         .collect();
@@ -74,18 +78,12 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut Vec<Spore>) {
     spores
         .par_iter_mut()
         .zip(forces.par_iter())
-        .for_each(|(spore, force)| apply_force_and_move(spore, force));
+        .for_each(|(spore, force)| apply_and_move(spore, force));
 }
 
 pub struct Dist {
-    x_dist: f32,
-    y_dist: f32,
+    vec: Vector,
     tot_dist: f32,
-}
-
-pub struct Force {
-    x_force: f32,
-    y_force: f32,
 }
 
 fn get_force_reach(spore_configs: &SporeConfigs, spore_type: &SporeType) -> f32 {
@@ -93,55 +91,49 @@ fn get_force_reach(spore_configs: &SporeConfigs, spore_type: &SporeType) -> f32 
 }
 
 // parallellizing with crayon slows this function down!
-pub fn calculate_forces(spore_configs: &SporeConfigs, spore: &Spore, spores: &Vec<Spore>) -> Force {
+pub fn calculate_forces(
+    spore_configs: &SporeConfigs,
+    spore: &Spore,
+    spores: &Vec<Spore>,
+) -> Vector {
     spores
         .iter()
         .filter(|&other| spore.id != other.id)
         .map(|other| to_calibrated_dist(other, spore))
         .filter(|(other, dist)| dist.tot_dist <= get_force_reach(spore_configs, &other.spore_type))
         .map(|(other, dist)| calculate_force(spore_configs, &other, dist))
-        .fold( 
-            ZERO_FORCE,
-            |force, next_force| Force {
-                x_force: force.x_force + next_force.x_force,
-                y_force: force.y_force + next_force.y_force,
-            },
-        )
+        .sum()
 }
 
 fn to_calibrated_dist<'a>(other: &'a Spore, spore: &Spore) -> (&'a Spore, Dist) {
-    let uncalibrated_x_dist = other.x_coord - spore.x_coord;
-    let uncalibrated_y_dist = other.y_coord - spore.y_coord;
+    let uncalibrated_dist = other.position - spore.position;
 
     // recalibrate to account for wrap-around
-    let x_dist = if uncalibrated_x_dist.abs() >= UNIVERSE_WIDTH - DEFAULT_FORCE_REACH {
-        uncalibrated_x_dist - UNIVERSE_WIDTH * uncalibrated_x_dist.signum()
+    let x_dist = if uncalibrated_dist.x.abs() >= UNIVERSE_WIDTH - DEFAULT_FORCE_REACH {
+        uncalibrated_dist.x - UNIVERSE_WIDTH * uncalibrated_dist.x.signum()
     } else {
-        uncalibrated_x_dist
+        uncalibrated_dist.x
     };
-    let y_dist = if uncalibrated_y_dist.abs() >= UNIVERSE_HEIGHT - DEFAULT_FORCE_REACH {
-        uncalibrated_y_dist - UNIVERSE_HEIGHT * uncalibrated_y_dist.signum()
+    let y_dist = if uncalibrated_dist.y.abs() >= UNIVERSE_HEIGHT - DEFAULT_FORCE_REACH {
+        uncalibrated_dist.y - UNIVERSE_HEIGHT * uncalibrated_dist.y.signum()
     } else {
-        uncalibrated_y_dist
+        uncalibrated_dist.y
     };
 
     let tot_dist = (x_dist.powi(2) + y_dist.powi(2)).sqrt();
     (
         other,
         Dist {
-            x_dist,
-            y_dist,
+            vec: Vector {
+                x: x_dist,
+                y: y_dist,
+            },
             tot_dist,
         },
     )
 }
 
-const ZERO_FORCE: Force = Force {
-    x_force: 0.0,
-    y_force: 0.0,
-};
-
-pub fn calculate_force(spore_configs: &SporeConfigs, other: &Spore, dist: Dist) -> Force {
+pub fn calculate_force(spore_configs: &SporeConfigs, other: &Spore, dist: Dist) -> Vector {
     // if too close: acceleration away
     let repulsion_dist = get_repulsion_dist(spore_configs, &other.spore_type);
     if dist.tot_dist < repulsion_dist {
@@ -149,10 +141,7 @@ pub fn calculate_force(spore_configs: &SporeConfigs, other: &Spore, dist: Dist) 
             * DEFAULT_REPULSION_AMPLITUDE
             / repulsion_dist.powi(2);
 
-        Force {
-            x_force: repulsion_force * dist.x_dist,
-            y_force: repulsion_force * dist.y_dist,
-        }
+        dist.vec * repulsion_force
     } else {
         scale_force(&spore_configs, &other.spore_type, dist)
     }
@@ -167,7 +156,7 @@ fn get_force_factor(spore_configs: &SporeConfigs, spore_type: &SporeType) -> f32
 }
 
 // the force is linear to the distance |\./\ or |\.\/
-fn scale_force(spore_configs: &SporeConfigs, spore_type: &SporeType, dist: Dist) -> Force {
+fn scale_force(spore_configs: &SporeConfigs, spore_type: &SporeType, dist: Dist) -> Vector {
     let repulsion_dist = get_repulsion_dist(spore_configs, spore_type);
     let not_repulsion_dist = dist.tot_dist - repulsion_dist;
     let net_force_reach = get_force_reach(spore_configs, spore_type) - repulsion_dist;
@@ -175,19 +164,18 @@ fn scale_force(spore_configs: &SporeConfigs, spore_type: &SporeType, dist: Dist)
     let scale = dist_from_force_reach_center / net_force_reach / 2.0;
     let factor = get_force_factor(spore_configs, spore_type);
 
-    Force {
-        x_force: dist.x_dist * factor / dist.tot_dist * scale,
-        y_force: dist.y_dist * factor / dist.tot_dist * scale,
-    }
+    dist.vec * (factor * scale / dist.tot_dist)
 }
 
-fn apply_force_and_move(spore: &mut Spore, force: &Force) {
-    spore.x_speed = spore.x_speed * FRICTION + force.x_force;
-    spore.y_speed = spore.y_speed * FRICTION + force.y_force;
+fn apply_and_move(spore: &mut Spore, force: &Vector) {
+    spore.speed = spore.speed * FRICTION + *force;
+    let new_position = spore.position + spore.speed;
+    spore.position = modulo_position(new_position);
+}
 
-    let new_x_coord = spore.x_coord + spore.x_speed;
-    let new_y_coord = spore.y_coord + spore.y_speed;
-
-    spore.x_coord = (((new_x_coord) % UNIVERSE_WIDTH) + UNIVERSE_WIDTH) % UNIVERSE_WIDTH;
-    spore.y_coord = ((new_y_coord % UNIVERSE_HEIGHT) + UNIVERSE_HEIGHT) % UNIVERSE_HEIGHT;
+fn modulo_position(position: Vector) -> Vector {
+    Vector {
+        x: (((position.x) % UNIVERSE_WIDTH) + UNIVERSE_WIDTH) % UNIVERSE_WIDTH,
+        y: ((position.y % UNIVERSE_HEIGHT) + UNIVERSE_HEIGHT) % UNIVERSE_HEIGHT,
+    }
 }

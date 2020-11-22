@@ -57,7 +57,6 @@ For Linux:
   * ☑️ testing: don't move the spores
   * put force_reach in calibrated_dist
   * put repulsion_dist in calibrated_dist
-* implement operators for Point or Force
 * try out [data oriented design](http://jamesmcm.github.io/blog/2020/07/25/intro-dod/#en)
 * zoom to the centre, not top left
 * additional keys
@@ -155,3 +154,6 @@ For Linux:
 * ☑️ only show part of universe at a time for a larger universe
   * ☑️ distinction: _view_ is only __part__ of the _universe_
   * ☑️ bound-checking (zoom or move) should still work
+* ☑️ Vectors
+  * ☑️ use them 
+  * ☑️ implement operator Add for Point or Force

@@ -1,5 +1,7 @@
-# performance with crayon
+# release AVG ticks/s (3000 spores)
+34
 
+# performance with crayon
 79  -   74  -   102    -    avg fps
 y       y       y           16.3
 y       y       n           21.5        <----
