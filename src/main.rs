@@ -135,7 +135,7 @@ impl event::EventHandler for SporeUniverse {
         graphics::clear(ctx, background_color);
 
         draw_spores(ctx, &self)?;
-        show_fps(ctx, self.font, self.tick, self.zoom, self.view_position)?;
+        show_numbers(ctx, self.font, self.tick, self.zoom, self.view_position)?;
 
         graphics::present(ctx)?;
         Ok(())
@@ -176,7 +176,7 @@ fn get_color(spore_type: SporeType) -> Color {
     }
 }
 
-fn show_fps(
+fn show_numbers(
     ctx: &mut Context,
     font: Font,
     tick: u32,
@@ -187,9 +187,11 @@ fn show_fps(
         ctx,
         &graphics::Text::new((
             format!(
-                "FPS: {:.2}\nTick: {}\nZoom: x{:.2}\nCoords: {}",
+                "Time: {}\nFPS: {:.2}\nTick: {}\nAVG ticks/s: {:.2}\nZoom: x{:.2}\nCoords: {}",
+                timer::time_since_start(ctx).as_secs(),
                 timer::fps(ctx),
                 tick,
+                (tick as f32)/ timer::time_since_start(ctx).as_secs_f32(),
                 zoom,
                 position,
             ),
