@@ -31,7 +31,29 @@ impl Sub for Vector {
     }
 }
 
+impl Sub for &Vector {
+    type Output = Vector;
+
+    fn sub(self, rhs: &Vector) -> Vector {
+        Vector {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
 impl Mul<f32> for Vector {
+    type Output = Vector;
+
+    fn mul(self, rhs: f32) -> Vector {
+        Vector {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl Mul<f32> for &mut Vector {
     type Output = Vector;
 
     fn mul(self, rhs: f32) -> Vector {
@@ -53,7 +75,7 @@ impl Div<f32> for Vector {
     }
 }
 
-const ZERO_VECTOR: Vector = Vector { x: 0.0, y: 0.0 };
+pub const ZERO_VECTOR: Vector = Vector { x: 0.0, y: 0.0 };
 
 impl Sum for Vector {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {

@@ -11,7 +11,6 @@ use ggez::{
 use ggez::{Context, GameResult};
 
 use std::{
-    collections::HashMap,
     env,
     path::{self, PathBuf},
 };
@@ -20,7 +19,7 @@ mod generators;
 mod spore;
 mod vector;
 use generators::{generate_spore_configs, generate_spores};
-use spore::{move_spores, Spore, SporeConfig, SporeType, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
+use spore::{move_spores, SporeConfigs, Spores, NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -28,7 +27,7 @@ static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 const HEIGHT_RATIO: f32 = WINDOW_HEIGHT / UNIVERSE_HEIGHT;
 const WIDTH_RATIO: f32 = WINDOW_WIDTH / UNIVERSE_WIDTH;
 
-const MAX_ZOOM: f32 = 2.0;
+const MAX_ZOOM: f32 = 4.0;
 const MIN_ZOOM: f32 = HEIGHT_RATIO; // 1.0 Ideally should be const fn f32::min(HEIGHT_RATIO, WIDTH_RATIO)
 const ZOOM_SPEED: f32 = 0.03;
 const MOVE_INCREMENT: f32 = 40.0;
@@ -37,8 +36,8 @@ struct SporeUniverse {
     font: Font,
     paused: bool,
     tick: u32,
-    spore_configs: HashMap<SporeType, SporeConfig>,
-    spores: Vec<Spore>,
+    spore_configs: SporeConfigs,
+    spores: Spores,
     view_position: Point2<f32>,
     zoom: f32,
 }
@@ -145,13 +144,16 @@ impl event::EventHandler for SporeUniverse {
 
 fn draw_spores(ctx: &mut Context, universe: &SporeUniverse) -> GameResult {
     let mut mesh_builder = graphics::MeshBuilder::new();
-    for spore in &universe.spores {
+    for index in 0..NUMBER_OF_SPORES as usize {
         mesh_builder.circle(
             graphics::DrawMode::fill(),
-            na::Point2::new(spore.position.x, spore.position.y),
+            na::Point2::new(
+                universe.spores.positions[index].x,
+                universe.spores.positions[index].y,
+            ),
             4.0,
             0.01,
-            get_color(spore.spore_type),
+            get_color(universe.spores.spore_types[index]),
         );
     }
     let mesh = mesh_builder.build(ctx)?;
@@ -166,14 +168,15 @@ fn draw_spores(ctx: &mut Context, universe: &SporeUniverse) -> GameResult {
     Ok(())
 }
 
-fn get_color(spore_type: SporeType) -> Color {
+fn get_color(spore_type: u8) -> Color {
     match spore_type {
-        SporeType::One => rgb(238, 96, 85),     //red
-        SporeType::Two => rgb(96, 211, 148),    // green
-        SporeType::Three => rgb(170, 246, 131), // light green
-        SporeType::Four => rgb(255, 217, 125),  // orange
-        SporeType::Five => rgb(255, 155, 133),  // salmon
-        SporeType::Six => rgb(89, 136, 207),    // blue
+        0 => rgb(238, 96, 85),   //red
+        1 => rgb(96, 211, 148),  // green
+        2 => rgb(170, 246, 131), // light green
+        3 => rgb(255, 217, 125), // orange
+        4 => rgb(255, 155, 133), // salmon
+        5 => rgb(89, 136, 207),  // blue
+        _ => panic!(),
     }
 }
 
@@ -188,8 +191,9 @@ fn show_numbers(
         ctx,
         &graphics::Text::new((
             format!(
-                "Time: {}\nFPS: {:.2}\nTick: {}\nAVG ticks/s: {:.2}\nZoom: x{:.2}\nCoords: {}",
-                timer::time_since_start(ctx).as_secs(),
+                "#spores: {}\nTime: {}\nFPS: {:.2}\nTick: {}\nAVG ticks/s: {:.2}\nZoom: x{:.2}\nCoords: {}",
+                NUMBER_OF_SPORES,
+                format_duration(timer::time_since_start(ctx).as_secs()),
                 timer::fps(ctx),
                 tick,
                 (tick as f32) / timer::time_since_start(ctx).as_secs_f32(),
@@ -197,13 +201,17 @@ fn show_numbers(
                 position,
             ),
             font,
-            24.0,
+            18.0,
         )),
         graphics::DrawParam::new()
             // .dest(dest_point)
             .color(graphics::WHITE),
     )?;
     Ok(())
+}
+
+fn format_duration(secs: u64) -> String {
+    format!("{}m{}s", secs / 60, secs % 60)
 }
 
 fn rgb(r: u8, g: u8, b: u8) -> Color {
@@ -252,29 +260,7 @@ pub fn main() -> GameResult {
         space\tto pause\n
         esc\tto quit\n\n
         Spore configuration:\n\n {}\n",
-        print_spore_configs(&state.spore_configs)
+        format!("{:.2?}", state.spore_configs)
     );
     event::run(ctx, event_loop, state)
-}
-
-fn print_spore_configs(spore_configs: &HashMap<SporeType, SporeConfig>) -> String {
-    let mut pretty_print = String::from("[");
-
-    let format = |st| {
-        format!(
-            "(SporeType::{:?},{:.2?}),",
-            st,
-            spore_configs.get(&st).unwrap()
-        )
-        .replace(" ", "")
-    };
-    pretty_print += &format(SporeType::One);
-    pretty_print += &format(SporeType::Two);
-    pretty_print += &format(SporeType::Three);
-    pretty_print += &format(SporeType::Four);
-    pretty_print += &format(SporeType::Five);
-    pretty_print += &format(SporeType::Six);
-
-    pretty_print += &"]";
-    pretty_print.to_string()
 }
