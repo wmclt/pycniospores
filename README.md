@@ -53,11 +53,6 @@ For Linux:
 
 ## TODO
 
-* ☑️ try out [data oriented design](http://jamesmcm.github.io/blog/2020/07/25/intro-dod/#en)
-* performance
-  * ☑️ testing: don't move the spores
-  * put force_reach in calibrated_dist
-  * put repulsion_dist in calibrated_dist
 * use config.rs
 * zoom to the centre, not top left
 * additional keys
@@ -158,3 +153,6 @@ For Linux:
 * ☑️ Vectors
   * ☑️ use them 
   * ☑️ implement operator Add for Point or Force
+* ☑️ performance
+  * ☑️ try out [data oriented design](http://jamesmcm.github.io/blog/2020/07/25/intro-dod/#en)
+  * ☑️ testing: don't move the spores
