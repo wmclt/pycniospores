@@ -1,19 +1,11 @@
 use rayon::prelude::*;
-
-use crate::vector::Vector;
-
-pub const UNIVERSE_HEIGHT: f32 = 2400.0;
-pub const UNIVERSE_WIDTH: f32 = 3840.0;
-
-// TODO put in config file
-pub const DEFAULT_REPULSION_DIST: f32 = 20.0; // Should be an absolute value.
-pub const DEFAULT_REPULSION_AMPLITUDE: f32 = -5.0 * DEFAULT_FORCE_AMPLITUDE;
-pub const DEFAULT_FORCE_AMPLITUDE: f32 = 0.12; //0.006
-pub const DEFAULT_FORCE_REACH: f32 = 70.0; //70
-
-pub const NUMBER_OF_SPORES: u16 = 5000;
-
-const FRICTION: f32 = 0.94; // friction should be low!
+use crate::{
+    configuration::{
+        FRICTION, MAX_FORCE_REACH, NUMBER_OF_SPORES, REPULSION_AMPLITUDE, UNIVERSE_HEIGHT,
+        UNIVERSE_WIDTH,
+    },
+    vector::Vector,
+};
 
 pub struct Spores {
     pub positions: Vec<Vector>,
@@ -40,7 +32,7 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut Spores) {
         .collect();
 
     let (new_poss, new_speeds) = (0..NUMBER_OF_SPORES as usize)
-        .into_par_iter() 
+        .into_par_iter()
         .map(|index| (spores.positions[index], spores.speeds[index], forces[index]))
         .map(|(pos, speed, force)| {
             let new_speed = speed * FRICTION + force;
@@ -67,9 +59,12 @@ pub fn calculate_forces(spore_configs: &SporeConfigs, spore: u16, spores: &Spore
             )
         })
         .filter(|(other, dist)| {
-            dist.tot_dist <= spore_configs.force_reaches[spores.spore_types[*other as usize] as usize]
+            dist.tot_dist
+                <= spore_configs.force_reaches[spores.spore_types[*other as usize] as usize]
         })
-        .map(|(other, dist)| calculate_force(spore_configs, spores.spore_types[other as usize], dist)) // TODO not the problem
+        .map(|(other, dist)| {
+            calculate_force(spore_configs, spores.spore_types[other as usize], dist)
+        }) // TODO not the problem
         .sum()
 }
 
@@ -82,12 +77,12 @@ fn to_calibrated_dist<'a>(other: Vector, spore: Vector) -> Dist {
     let uncalibrated_dist = other - spore;
 
     // recalibrate to account for wrap-around
-    let x = if uncalibrated_dist.x.abs() >= UNIVERSE_WIDTH - DEFAULT_FORCE_REACH {
+    let x = if uncalibrated_dist.x.abs() >= UNIVERSE_WIDTH - MAX_FORCE_REACH {
         uncalibrated_dist.x - UNIVERSE_WIDTH * uncalibrated_dist.x.signum()
     } else {
         uncalibrated_dist.x
     };
-    let y = if uncalibrated_dist.y.abs() >= UNIVERSE_HEIGHT - DEFAULT_FORCE_REACH {
+    let y = if uncalibrated_dist.y.abs() >= UNIVERSE_HEIGHT - MAX_FORCE_REACH {
         uncalibrated_dist.y - UNIVERSE_HEIGHT * uncalibrated_dist.y.signum()
     } else {
         uncalibrated_dist.y
@@ -106,9 +101,8 @@ pub fn calculate_force(spore_configs: &SporeConfigs, spore_type: u8, dist: Dist)
     // let repulsion_dist = get_repulsion_dist(spore_configs, other);
     let repulsion_dist = spore_configs.repulsion_dists[spore_type as usize];
     if dist.tot_dist < repulsion_dist {
-        let repulsion_force = (dist.tot_dist - repulsion_dist).powi(2)
-            * DEFAULT_REPULSION_AMPLITUDE
-            / repulsion_dist.powi(2);
+        let repulsion_force =
+            (dist.tot_dist - repulsion_dist).powi(2) * REPULSION_AMPLITUDE / repulsion_dist.powi(2);
 
         dist.vec * repulsion_force
     } else {

@@ -1,14 +1,12 @@
 use rand::prelude::*;
-
 use crate::{
-    spore::{
-        SporeConfigs, Spores, DEFAULT_FORCE_AMPLITUDE, DEFAULT_FORCE_REACH, DEFAULT_REPULSION_DIST,
+    configuration::{
+        MAX_FORCE_AMPLITUDE, MAX_FORCE_REACH, MAX_REPULSION_DIST, NUMBER_OF_CONFIGS,
         NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
     },
+    spore::{SporeConfigs, Spores},
     vector::{Vector, ZERO_VECTOR},
 };
-
-const NUMBER_OF_CONFIGS: u8 = 6;
 
 pub fn generate_spore_configs() -> SporeConfigs {
     let mut rng = rand::thread_rng();
@@ -20,13 +18,13 @@ pub fn generate_spore_configs() -> SporeConfigs {
     let randomly = false;
     if randomly {
         (0..NUMBER_OF_CONFIGS).for_each(|_| {
-            repulsion_dists.push(rng.gen_range(0.08, 1.2) * DEFAULT_REPULSION_DIST);
+            repulsion_dists.push(rng.gen_range(0.08, 1.2) * MAX_REPULSION_DIST);
             force_factors.push(
                 rng.gen_range(0.15, 1.0)
                     * if rng.gen_bool(0.65) { 1.0 } else { -1.0 }
-                    * DEFAULT_FORCE_AMPLITUDE,
+                    * MAX_FORCE_AMPLITUDE,
             );
-            force_reaches.push(rng.gen_range(0.20, 1.0) * DEFAULT_FORCE_REACH);
+            force_reaches.push(rng.gen_range(0.20, 1.0) * MAX_FORCE_REACH);
         });
 
         SporeConfigs {

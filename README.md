@@ -53,6 +53,7 @@ For Linux:
 
 ## TODO
 
+* use buckets to speed up
 * use config.rs
 * zoom to the centre, not top left
 * additional keys

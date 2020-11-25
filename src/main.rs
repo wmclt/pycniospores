@@ -1,25 +1,29 @@
-use ggez::{self, event::quit, event::KeyCode, event::KeyMods, graphics::Color};
+use configuration::{NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
 use ggez::{
+    self,
     conf::{self},
-    graphics, nalgebra as na,
-};
-use ggez::{event, graphics::Font};
-use ggez::{
+    event,
+    event::quit,
+    event::KeyCode,
+    event::KeyMods,
+    graphics,
+    graphics::Color,
+    graphics::Font,
+    nalgebra as na,
     nalgebra::{Point2, Vector2},
-    timer,
+    timer, Context, GameResult,
 };
-use ggez::{Context, GameResult};
-
 use std::{
     env,
     path::{self, PathBuf},
 };
 
+mod configuration;
 mod generators;
 mod spore;
 mod vector;
 use generators::{generate_spore_configs, generate_spores};
-use spore::{move_spores, SporeConfigs, Spores, NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
+use spore::{move_spores, SporeConfigs, Spores};
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -92,39 +96,45 @@ impl event::EventHandler for SporeUniverse {
                 self.view_position.y = f32::max(
                     self.view_position.y,
                     -UNIVERSE_HEIGHT * (self.zoom - HEIGHT_RATIO),
-                ).round();
+                )
+                .round();
                 self.view_position.x = f32::max(
                     self.view_position.x,
                     -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO),
-                ).round();
+                )
+                .round();
             }
             KeyCode::Up => {
                 let min_allowable_position_y = 0.0;
                 self.view_position.y = f32::min(
                     min_allowable_position_y,
                     self.view_position.y + MOVE_INCREMENT,
-                ).round();
+                )
+                .round();
             }
             KeyCode::Down => {
                 // within bounds
                 self.view_position.y = f32::max(
                     self.view_position.y - MOVE_INCREMENT,
                     -UNIVERSE_HEIGHT * (self.zoom - HEIGHT_RATIO),
-                ).round();
+                )
+                .round();
             }
             KeyCode::Right => {
                 // within bounds
                 self.view_position.x = f32::max(
                     self.view_position.x - MOVE_INCREMENT,
                     -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO),
-                ).round();
+                )
+                .round();
             }
             KeyCode::Left => {
                 let min_allowable_position_x = 0.0;
                 self.view_position.x = f32::min(
                     min_allowable_position_x,
                     self.view_position.x + MOVE_INCREMENT,
-                ).round();
+                )
+                .round();
             }
             _ => {}
         }
