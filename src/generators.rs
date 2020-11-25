@@ -20,13 +20,13 @@ pub fn generate_spore_configs() -> SporeConfigs {
     let randomly = false;
     if randomly {
         (0..NUMBER_OF_CONFIGS).for_each(|_| {
-            repulsion_dists.push(rng.gen_range(0.25, 1.0) * DEFAULT_REPULSION_DIST);
+            repulsion_dists.push(rng.gen_range(0.08, 1.2) * DEFAULT_REPULSION_DIST);
             force_factors.push(
-                rng.gen_range(0.25, 1.0)
+                rng.gen_range(0.15, 1.0)
                     * if rng.gen_bool(0.65) { 1.0 } else { -1.0 }
                     * DEFAULT_FORCE_AMPLITUDE,
             );
-            force_reaches.push(rng.gen_range(0.3, 1.0) * DEFAULT_FORCE_REACH);
+            force_reaches.push(rng.gen_range(0.20, 1.0) * DEFAULT_FORCE_REACH);
         });
 
         SporeConfigs {

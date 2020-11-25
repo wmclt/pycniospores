@@ -2,8 +2,8 @@ use rayon::prelude::*;
 
 use crate::vector::Vector;
 
-pub const UNIVERSE_HEIGHT: f32 = 1600.0;
-pub const UNIVERSE_WIDTH: f32 = 2560.0;
+pub const UNIVERSE_HEIGHT: f32 = 2400.0;
+pub const UNIVERSE_WIDTH: f32 = 3840.0;
 
 // TODO put in config file
 pub const DEFAULT_REPULSION_DIST: f32 = 20.0; // Should be an absolute value.

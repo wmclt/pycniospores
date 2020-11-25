@@ -92,39 +92,39 @@ impl event::EventHandler for SporeUniverse {
                 self.view_position.y = f32::max(
                     self.view_position.y,
                     -UNIVERSE_HEIGHT * (self.zoom - HEIGHT_RATIO),
-                );
+                ).round();
                 self.view_position.x = f32::max(
                     self.view_position.x,
                     -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO),
-                );
+                ).round();
             }
             KeyCode::Up => {
                 let min_allowable_position_y = 0.0;
                 self.view_position.y = f32::min(
                     min_allowable_position_y,
                     self.view_position.y + MOVE_INCREMENT,
-                );
+                ).round();
             }
             KeyCode::Down => {
                 // within bounds
                 self.view_position.y = f32::max(
                     self.view_position.y - MOVE_INCREMENT,
                     -UNIVERSE_HEIGHT * (self.zoom - HEIGHT_RATIO),
-                );
+                ).round();
             }
             KeyCode::Right => {
                 // within bounds
                 self.view_position.x = f32::max(
                     self.view_position.x - MOVE_INCREMENT,
                     -UNIVERSE_WIDTH * (self.zoom - WIDTH_RATIO),
-                );
+                ).round();
             }
             KeyCode::Left => {
                 let min_allowable_position_x = 0.0;
                 self.view_position.x = f32::min(
                     min_allowable_position_x,
                     self.view_position.x + MOVE_INCREMENT,
-                );
+                ).round();
             }
             _ => {}
         }
@@ -171,8 +171,8 @@ fn draw_spores(ctx: &mut Context, universe: &SporeUniverse) -> GameResult {
 fn get_color(spore_type: u8) -> Color {
     match spore_type {
         0 => rgb(238, 96, 85),   //red
-        1 => rgb(96, 211, 148),  // green
-        2 => rgb(170, 246, 131), // light green
+        1 => rgb(90, 200, 140),  // green
+        2 => rgb(180, 250, 140), // light green
         3 => rgb(255, 217, 125), // orange
         4 => rgb(255, 155, 133), // salmon
         5 => rgb(89, 136, 207),  // blue
