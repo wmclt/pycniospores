@@ -1,5 +1,8 @@
 use crate::{
-    configuration::{MAX_FORCE_REACH, NBR_BUCKETS, NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS},
+    configuration::{
+        BUCKET_HEIGHT, BUCKET_WIDTH, NBR_BUCKETS, NBR_HORZ_BUCKETS,
+        NBR_VERT_BUCKETS,
+    },
     vector::Vector,
 };
 
@@ -16,8 +19,8 @@ pub fn get_buckets() -> Vec<(usize, usize)> {
 
 pub fn get_bucket(x: f32, y: f32) -> (usize, usize) {
     (
-        (x / MAX_FORCE_REACH).floor() as usize,
-        (y / MAX_FORCE_REACH).floor() as usize,
+        (x / BUCKET_WIDTH as f32).floor() as usize,
+        (y / BUCKET_HEIGHT as f32).floor() as usize,
     )
 }
 
@@ -31,12 +34,15 @@ pub fn get_neighbors(horz: usize, vert: usize) -> [(usize, usize); 9] {
         (mod_horz(horz + NBR_HORZ_BUCKETS - 1), mod_vert(vert + 1)),
         (mod_horz(horz), mod_vert(vert + 1)),
         (mod_horz(horz + 1), mod_vert(vert + 1)),
-        (mod_horz(horz + NBR_HORZ_BUCKETS- 1), mod_vert(vert)),
+        (mod_horz(horz + NBR_HORZ_BUCKETS - 1), mod_vert(vert)),
         (mod_horz(horz), mod_vert(vert)),
         (mod_horz(horz + 1), mod_vert(vert)),
-        (mod_horz(horz + NBR_HORZ_BUCKETS- 1), mod_vert(vert + NBR_VERT_BUCKETS - 1)),
-        (mod_horz(horz), mod_vert(vert + NBR_VERT_BUCKETS- 1)),
-        (mod_horz(horz + 1), mod_vert(vert + NBR_VERT_BUCKETS- 1)),
+        (
+            mod_horz(horz + NBR_HORZ_BUCKETS - 1),
+            mod_vert(vert + NBR_VERT_BUCKETS - 1),
+        ),
+        (mod_horz(horz), mod_vert(vert + NBR_VERT_BUCKETS - 1)),
+        (mod_horz(horz + 1), mod_vert(vert + NBR_VERT_BUCKETS - 1)),
     ]
 }
 
