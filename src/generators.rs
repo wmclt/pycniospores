@@ -1,16 +1,19 @@
-use rand::prelude::*;
 use crate::{
+    bucket::get_bucket,
     configuration::{
-        MAX_FORCE_AMPLITUDE, MAX_FORCE_REACH, MAX_REPULSION_DIST, NUMBER_OF_CONFIGS,
-        NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
+        EXP_NBR_SPORES_PER_BUCKET, MAX_FORCE_AMPLITUDE, MAX_FORCE_REACH, MAX_REPULSION_DIST,
+        NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS, NUMBER_OF_CONFIGS, NUMBER_OF_SPORES, UNIVERSE_HEIGHT,
+        UNIVERSE_WIDTH,
     },
-    spore::{SporeConfigs, Spores},
+    spore::{SporeConfigs, SporesMatrix},
     vector::{Vector, ZERO_VECTOR},
 };
+use rand::prelude::*;
 
 pub fn generate_spore_configs() -> SporeConfigs {
     let mut rng = rand::thread_rng();
 
+    // TODO make arrays?
     let mut repulsion_dists = Vec::with_capacity(6);
     let mut force_factors = Vec::with_capacity(6);
     let mut force_reaches = Vec::with_capacity(6);
@@ -37,27 +40,34 @@ pub fn generate_spore_configs() -> SporeConfigs {
     }
 }
 
-pub fn generate_spores() -> Spores {
+pub fn generate_spores() -> SporesMatrix {
     let mut rng = rand::thread_rng();
 
-    let mut positions = Vec::with_capacity(NUMBER_OF_SPORES as usize);
-    let mut speeds = Vec::with_capacity(NUMBER_OF_SPORES as usize);
-    let mut spore_types = Vec::with_capacity(NUMBER_OF_SPORES as usize);
+    let mut positions = vec![vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS];
+    let mut speeds = vec![vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS];
+    let mut spore_types = vec![vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS];
 
     for _ in 0..NUMBER_OF_SPORES {
         let x: f32 = rng.gen_range(0.0, UNIVERSE_WIDTH);
         let y: f32 = rng.gen_range(0.0, UNIVERSE_HEIGHT);
 
-        positions.push(Vector { x, y });
-        speeds.push(ZERO_VECTOR);
-        spore_types.push(rng.gen_range(0, NUMBER_OF_CONFIGS));
+        let (horz, vert) = get_bucket(x, y);
+
+        // println!("{}, {}", horz, vert);
+        positions[vert][horz].push(Vector { x, y });
+        speeds[vert][horz].push(ZERO_VECTOR);
+        spore_types[vert][horz].push(rng.gen_range(0, NUMBER_OF_CONFIGS));
     }
-    Spores {
+    SporesMatrix {
         positions,
         speeds,
         spore_types,
     }
 }
+
+// pub positions: [[Vec<Vector>; NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS],
+// pub speeds: [[Vec<Vector>; NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS],
+// pub spore_types: [[Vec<u8>; NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS],
 
 // replace with previous spore configuration
 fn get_previous_configs() -> SporeConfigs {

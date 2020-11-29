@@ -1,16 +1,18 @@
-use rayon::prelude::*;
 use crate::{
+    bucket::get_bucket_from_vec,
+    bucket::get_neighbors,
     configuration::{
-        FRICTION, MAX_FORCE_REACH, NUMBER_OF_SPORES, REPULSION_AMPLITUDE, UNIVERSE_HEIGHT,
-        UNIVERSE_WIDTH,
+        FRICTION, MAX_FORCE_REACH, NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS, REPULSION_AMPLITUDE,
+        UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
     },
-    vector::Vector,
+    vector::{Vector, ZERO_VECTOR},
 };
+use rayon::prelude::*;
 
-pub struct Spores {
-    pub positions: Vec<Vector>,
-    pub speeds: Vec<Vector>,
-    pub spore_types: Vec<u8>,
+pub struct SporesMatrix {
+    pub positions: Vec<Vec<Vec<Vector>>>,
+    pub speeds: Vec<Vec<Vec<Vector>>>,
+    pub spore_types: Vec<Vec<Vec<u8>>>,
 }
 
 #[derive(Debug)]
@@ -25,47 +27,132 @@ pub struct SporeConfigs {
 //  2. apply forces
 //      3. update speeds: apply forces + friction to speeds
 //      4. move according to speed
-pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut Spores) {
-    let forces: Vec<Vector> = (0..NUMBER_OF_SPORES)
-        .into_par_iter()
-        .map(|index| calculate_forces(&spore_configs, index, &spores))
+pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesMatrix) {
+    for vert in 0..NBR_VERT_BUCKETS {
+        for horz in 0..NBR_HORZ_BUCKETS {
+            move_spores_in_bucket(spore_configs, spores, (horz as usize, vert as usize));
+        }
+    }
+
+    //TODO move from bucket to bucket
+
+    for vert in 0..NBR_VERT_BUCKETS {
+        for horz in 0..NBR_HORZ_BUCKETS {
+            let mut to_move = Vec::with_capacity(spores.positions[vert][horz].len());
+
+            for index in 0..spores.positions[vert][horz].len() {
+                let (new_horz, new_vert) = get_bucket_from_vec(spores.positions[vert][horz][index]);
+                if (new_horz, new_vert) != (horz, vert) {
+                    to_move.push((
+                        index,
+                        (new_horz, new_vert),
+                        (
+                            spores.positions[vert][horz][index],
+                            spores.speeds[vert][horz][index],
+                            spores.spore_types[vert][horz][index],
+                        ),
+                    ));
+                }
+            }
+
+            // copy spores
+            for &(_, (new_horz, new_vert), (pos, speed, spore_type)) in &to_move {
+                spores.positions[new_vert][new_horz].push(pos);
+                spores.speeds[new_vert][new_horz].push(speed);
+                spores.spore_types[new_vert][new_horz].push(spore_type);
+            }
+
+            // remove spores
+            let spores_to_move: Vec<&usize> = to_move.iter().map(|(i, _, _)| i).collect();
+            let mut i: usize = 0;
+            spores
+                .positions[vert][horz]
+                .retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
+            i = 0;
+            spores
+                .speeds[vert][horz]
+                .retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
+            i = 0;
+            spores
+                .spore_types[vert][horz]
+                .retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
+        }
+    }
+}
+
+fn move_spores_in_bucket(
+    spore_configs: &SporeConfigs,
+    spores: &mut SporesMatrix,
+    (horz, vert): (usize, usize),
+) {
+    let forces: Vec<Vector> = spores.positions[vert][horz]
+        .par_iter()
+        .map(|spore_position| {
+            calculate_forces(&spore_configs, *spore_position, &spores, (horz, vert))
+        })
         .collect();
 
-    let (new_poss, new_speeds) = (0..NUMBER_OF_SPORES as usize)
-        .into_par_iter()
-        .map(|index| (spores.positions[index], spores.speeds[index], forces[index]))
-        .map(|(pos, speed, force)| {
-            let new_speed = speed * FRICTION + force;
-            (modulo_position(pos + new_speed), new_speed)
-        })
-        .unzip();
+    let (indexes, (new_poss, new_speeds)): (Vec<usize>, (Vec<Vector>, Vec<Vector>)) =
+        (0..spores.positions[vert][horz].len())
+            .into_par_iter()
+            .map(|index| {
+                (
+                    index,
+                    spores.positions[vert][horz][index],
+                    spores.speeds[vert][horz][index],
+                    forces[index],
+                )
+            })
+            .map(|(index, pos, speed, force)| {
+                let new_speed = speed * FRICTION + force;
+                (index, (modulo_position(pos + new_speed), new_speed))
+            })
+            .unzip();
 
-    spores.positions = new_poss;
-    spores.speeds = new_speeds;
+    for spore in indexes {
+        spores.positions[vert][horz][spore] = new_poss[spore];
+        spores.speeds[vert][horz][spore] = new_speeds[spore];
+    }
 }
 
 // parallellizing with crayon slows this function down! even with DOD
-pub fn calculate_forces(spore_configs: &SporeConfigs, spore: u16, spores: &Spores) -> Vector {
-    (0..NUMBER_OF_SPORES)
-        .into_iter()
-        .filter(|other| *other != spore)
-        .map(|other| {
-            (
-                other,
-                to_calibrated_dist(
-                    spores.positions[other as usize],
-                    spores.positions[spore as usize],
-                ),
-            )
-        })
-        .filter(|(other, dist)| {
-            dist.tot_dist
-                <= spore_configs.force_reaches[spores.spore_types[*other as usize] as usize]
-        })
-        .map(|(other, dist)| {
-            calculate_force(spore_configs, spores.spore_types[other as usize], dist)
-        }) // TODO not the problem
-        .sum()
+// TODO just pass neighbours?
+pub fn calculate_forces(
+    spore_configs: &SporeConfigs,
+    spore: Vector,
+    spores: &SporesMatrix,
+    (horz, vert): (usize, usize),
+) -> Vector {
+    /*
+     * 1. iter over spores in bucket
+     * 2. iter over neighbor (and self) bucket
+     * 3. iter over spores of neighbors (and self)
+     * 4. calc force
+     */
+    let mut forces = vec![];
+    for (neighb_horz, neighb_vert) in get_neighbors(horz, vert).iter() {
+        let positions = &spores.positions[*neighb_vert][*neighb_horz];
+        let spore_types = &spores.spore_types[*neighb_vert][*neighb_horz];
+        let bucket_force = (0..positions.len())
+            .into_iter()
+            .map(|bucket_index| {
+                (
+                    bucket_index,
+                    to_calibrated_dist(positions[bucket_index as usize], spore),
+                )
+            })
+            .filter(|(bucket_index, dist)| {
+                dist.tot_dist
+                    <= spore_configs.force_reaches[spore_types[*bucket_index as usize] as usize]
+            })
+            .map(|(bucket_index, dist)| {
+                calculate_force(spore_configs, spore_types[bucket_index as usize], dist)
+            })
+            .sum();
+        forces.push(bucket_force);
+    }
+
+    forces.into_iter().sum()
 }
 
 pub struct Dist {
@@ -100,7 +187,9 @@ pub fn calculate_force(spore_configs: &SporeConfigs, spore_type: u8, dist: Dist)
     // if too close: acceleration away
     // let repulsion_dist = get_repulsion_dist(spore_configs, other);
     let repulsion_dist = spore_configs.repulsion_dists[spore_type as usize];
-    if dist.tot_dist < repulsion_dist {
+    if dist.tot_dist < 0.0001 {
+        ZERO_VECTOR
+    } else if dist.tot_dist < repulsion_dist {
         let repulsion_force =
             (dist.tot_dist - repulsion_dist).powi(2) * REPULSION_AMPLITUDE / repulsion_dist.powi(2);
 

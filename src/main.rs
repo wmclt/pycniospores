@@ -1,3 +1,4 @@
+use bucket::get_buckets;
 use configuration::{NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH};
 use ggez::{
     self,
@@ -18,12 +19,14 @@ use std::{
     path::{self, PathBuf},
 };
 
+mod bucket;
 mod configuration;
 mod generators;
 mod spore;
 mod vector;
+
 use generators::{generate_spore_configs, generate_spores};
-use spore::{move_spores, SporeConfigs, Spores};
+use spore::{move_spores, SporeConfigs, SporesMatrix};
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -41,7 +44,7 @@ struct SporeUniverse {
     paused: bool,
     tick: u32,
     spore_configs: SporeConfigs,
-    spores: Spores,
+    spores: SporesMatrix,
     view_position: Point2<f32>,
     zoom: f32,
 }
@@ -154,18 +157,20 @@ impl event::EventHandler for SporeUniverse {
 
 fn draw_spores(ctx: &mut Context, universe: &SporeUniverse) -> GameResult {
     let mut mesh_builder = graphics::MeshBuilder::new();
-    for index in 0..NUMBER_OF_SPORES as usize {
-        mesh_builder.circle(
-            graphics::DrawMode::fill(),
-            na::Point2::new(
-                universe.spores.positions[index].x,
-                universe.spores.positions[index].y,
-            ),
-            4.0,
-            0.01,
-            get_color(universe.spores.spore_types[index]),
-        );
+    for (horz, vert) in get_buckets() {
+        let positions = &universe.spores.positions[vert][horz];
+        let spore_types = &universe.spores.spore_types[vert][horz];
+        for index in 0..(positions.len()) as usize {
+            mesh_builder.circle(
+                graphics::DrawMode::fill(),
+                na::Point2::new(positions[index].x, positions[index].y),
+                4.0,
+                0.01,
+                get_color(spore_types[index]),
+            );
+        }
     }
+
     let mesh = mesh_builder.build(ctx)?;
     graphics::draw(
         ctx,

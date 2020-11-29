@@ -9,6 +9,8 @@ pub struct Vector {
     pub y: f32,
 }
 
+pub const ZERO_VECTOR: Vector = Vector { x: 0.0, y: 0.0 };
+
 impl Add for Vector {
     type Output = Vector;
 
@@ -75,7 +77,6 @@ impl Div<f32> for Vector {
     }
 }
 
-pub const ZERO_VECTOR: Vector = Vector { x: 0.0, y: 0.0 };
 
 impl Sum for Vector {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {

@@ -33,3 +33,6 @@ min 30 fps
 ## vec   <------
 max 39
 min 33
+
+# with 64*40= 2560 buckets
+fps = max 24
