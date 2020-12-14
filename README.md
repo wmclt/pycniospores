@@ -53,8 +53,8 @@ For Linux:
 
 ## TODO
 
-* use buckets to speed up
-* use config.rs
+* use config.rs for configuration => no recompile when changing config
+* refactor buckets code in spore.rs
 * zoom to the centre, not top left
 * additional keys
   * F for fullscreen?
@@ -157,3 +157,4 @@ For Linux:
 * ☑️ performance
   * ☑️ try out [data oriented design](http://jamesmcm.github.io/blog/2020/07/25/intro-dod/#en)
   * ☑️ testing: don't move the spores
+* ☑️ use buckets to speed up (= split up universe in chunks)

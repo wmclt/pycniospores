@@ -34,8 +34,6 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesMatrix) {
         }
     }
 
-    //TODO move from bucket to bucket
-
     for vert in 0..NBR_VERT_BUCKETS {
         for horz in 0..NBR_HORZ_BUCKETS {
             let mut to_move = Vec::with_capacity(spores.positions[vert][horz].len());
@@ -65,17 +63,11 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesMatrix) {
             // remove spores
             let spores_to_move: Vec<&usize> = to_move.iter().map(|(i, _, _)| i).collect();
             let mut i: usize = 0;
-            spores
-                .positions[vert][horz]
-                .retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
+            spores.positions[vert][horz].retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
             i = 0;
-            spores
-                .speeds[vert][horz]
-                .retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
+            spores.speeds[vert][horz].retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
             i = 0;
-            spores
-                .spore_types[vert][horz]
-                .retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
+            spores.spore_types[vert][horz].retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
         }
     }
 }

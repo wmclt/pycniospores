@@ -18,7 +18,7 @@ pub fn generate_spore_configs() -> SporeConfigs {
     let mut force_factors = Vec::with_capacity(6);
     let mut force_reaches = Vec::with_capacity(6);
 
-    let randomly = false;
+    let randomly = true;
     if randomly {
         (0..NUMBER_OF_CONFIGS).for_each(|_| {
             repulsion_dists.push(rng.gen_range(0.08, 1.2) * MAX_REPULSION_DIST);
