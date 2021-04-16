@@ -1,3 +1,5 @@
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+
 use crate::{
     bucket::get_neighbors,
     configuration::{
@@ -6,7 +8,6 @@ use crate::{
     spore::{SporeConfigs, SporesState},
     vector::{Vector, ZERO_VECTOR},
 };
-use rayon::prelude::*;
 
 pub fn calc_new_positions_and_speeds(
     spore_configs: &SporeConfigs,
@@ -105,7 +106,7 @@ pub fn calculate_force(spore_configs: &SporeConfigs, spore_type: u8, dist: Dist)
     // if too close: acceleration away
     // let repulsion_dist = get_repulsion_dist(spore_configs, other);
     let repulsion_dist = spore_configs.repulsion_dists[spore_type as usize];
-    if dist.tot_dist < 0.0001 {
+    if dist.tot_dist < 0.000001 { // spore itself
         ZERO_VECTOR
     } else if dist.tot_dist < repulsion_dist {
         let repulsion_force =
