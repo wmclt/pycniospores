@@ -1,6 +1,6 @@
 use std::usize;
 
-use crate::{bucket::{BucketCoord, get_bucket_from_pos}, configuration::{NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS}, movement_calculator::calc_new_positions_and_speeds, spore::{SporeConfigs, SporesState}, vector::Vector};
+use crate::{bucket::{BucketCoord, get_bucket_from_pos}, configuration::{NR_HORZ_BUCKETS, NR_VERT_BUCKETS}, movement_calculator::calc_new_positions_and_speeds, spore::{SporeConfigs, SporesState}, vector::Vector};
 
 //  TWO loops
 //  1. calculate forces
@@ -8,14 +8,14 @@ use crate::{bucket::{BucketCoord, get_bucket_from_pos}, configuration::{NBR_HORZ
 //      3. update speeds: apply forces + friction to speeds
 //      4. move according to speed
 pub fn move_spores(spore_configs: &SporeConfigs, spores_state: &mut SporesState) {
-    for vert in 0..NBR_VERT_BUCKETS {
-        for horz in 0..NBR_HORZ_BUCKETS {
+    for vert in 0..NR_VERT_BUCKETS {
+        for horz in 0..NR_HORZ_BUCKETS {
             move_spores_in_bucket(spore_configs, spores_state, (horz as usize, vert as usize));
         }
     }
 
-    for vert in 0..NBR_VERT_BUCKETS {
-        for horz in 0..NBR_HORZ_BUCKETS {
+    for vert in 0..NR_VERT_BUCKETS {
+        for horz in 0..NR_HORZ_BUCKETS {
             let bucket_movements = calc_bucket_movements(&spores_state, horz, vert);
             copy_spores_to_new_bucket(&bucket_movements, spores_state);
             remove_spores_from_old_buckets(&bucket_movements, spores_state, vert, horz);
@@ -28,7 +28,6 @@ fn move_spores_in_bucket(
     spores: &mut SporesState,
     (horz, vert): BucketCoord,
 ) {
-    // new positions & speeds
     let (indexes, (new_poss, new_speeds)) =
         calc_new_positions_and_speeds(spore_configs, spores, (horz, vert));
 

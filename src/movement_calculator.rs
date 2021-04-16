@@ -9,12 +9,12 @@ pub fn calc_new_positions_and_speeds(
     spores: &mut SporesState,
     (horz, vert): BucketCoord,
 ) -> (Vec<usize>, (Vec<Vector>, Vec<Vector>)) {
-    let forces = calc_forces(&spores, (horz, vert), spore_configs);
+    let forces = calc_forces(spores, (horz, vert), spore_configs);
     update_spores_with_forces(spores, (horz, vert), forces)
 }
 
 fn calc_forces(
-    spores: &&mut SporesState,
+    spores: &mut SporesState,
     (horz, vert): BucketCoord,
     spore_configs: &SporeConfigs,
 ) -> Vec<Vector> {
