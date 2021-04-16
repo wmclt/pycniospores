@@ -25,14 +25,7 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesState) {
             let bucket_movements = calc_bucket_movements(&spores, horz, vert);
 
             // copy spores to new bucket TODO: sort to_move by bucket?
-            for movement in &bucket_movements {
-                let (new_horz, new_vert) = movement.new_bucket_coord;
-                let (pos, speed, spore_type) = movement.spore_data;
-
-                spores.positions[new_vert][new_horz].push(pos);
-                spores.speeds[new_vert][new_horz].push(speed);
-                spores.spore_types[new_vert][new_horz].push(spore_type);
-            }
+            fun_name(&bucket_movements, spores);
 
             // remove spores that have moved (=only keep spores that haven't moved) [uses bad magic :/]
             let bucket_movement: Vec<usize> = bucket_movements
@@ -46,6 +39,32 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesState) {
             i = 0;
             spores.spore_types[vert][horz].retain(|_| (!bucket_movement.contains(&i), i += 1).0);
         }
+    }
+}
+
+fn fun_name(bucket_movements: &Vec<SporeBucketMovement>, spores: &mut SporesState) {
+    for movement in bucket_movements {
+        let (new_horz, new_vert) = movement.new_bucket_coord;
+        let (pos, speed, spore_type) = movement.spore_data;
+
+        spores.positions[new_vert][new_horz].push(pos);
+        spores.speeds[new_vert][new_horz].push(speed);
+        spores.spore_types[new_vert][new_horz].push(spore_type);
+    }
+}
+
+fn move_spores_in_bucket(
+    spore_configs: &SporeConfigs,
+    spores: &mut SporesState,
+    (horz, vert): (usize, usize),
+) {
+    // new positions & speeds
+    let (indexes, (new_poss, new_speeds)) =
+        calc_new_positions_and_speeds(spore_configs, spores, (horz, vert));
+
+    for spore in indexes {
+        spores.positions[vert][horz][spore] = new_poss[spore];
+        spores.speeds[vert][horz][spore] = new_speeds[spore];
     }
 }
 
@@ -77,19 +96,4 @@ fn calc_bucket_movements(
         }
     }
     bucket_movements
-}
-
-fn move_spores_in_bucket(
-    spore_configs: &SporeConfigs,
-    spores: &mut SporesState,
-    (horz, vert): (usize, usize),
-) {
-    // new positions & speeds
-    let (indexes, (new_poss, new_speeds)) =
-        calc_new_positions_and_speeds(spore_configs, spores, (horz, vert));
-
-    for spore in indexes {
-        spores.positions[vert][horz][spore] = new_poss[spore];
-        spores.speeds[vert][horz][spore] = new_speeds[spore];
-    }
 }
