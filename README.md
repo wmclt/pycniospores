@@ -1,7 +1,17 @@
 # pycniospores
 
+A simulation of up to 10k particles, inspired on a video by **CodeParade**: https://www.youtube.com/watch?v=Z_zmZ23grXE 
+The particles come in a number of configurations that either attract or repulse each other.
+
 Average FPS with 600 SPORES: 60 FPS.
 Suggestion: first do a `cargo build --release` before running it.
+
+## Best Rust Analyzer themes
+more distinctions in colors = better
+* GitHub Dark
+* Electron dark
+* Firefox Quantum Dark
+* Bluloco Dark Theme
 
 ## Literature
 

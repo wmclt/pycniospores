@@ -1,3 +1,5 @@
+use std::usize;
+
 use crate::{
     bucket::get_bucket_from_vec,
     bucket::get_neighbors,
@@ -9,10 +11,12 @@ use crate::{
 };
 use rayon::prelude::*;
 
+type Matrix<T> = Vec<Vec<T>>;
+
 pub struct SporesMatrix {
-    pub positions: Vec<Vec<Vec<Vector>>>,
-    pub speeds: Vec<Vec<Vec<Vector>>>,
-    pub spore_types: Vec<Vec<Vec<u8>>>,
+    pub positions: Matrix<Vec<Vector>>,
+    pub speeds: Matrix<Vec<Vector>>,
+    pub spore_types: Matrix<Vec<u8>>,
 }
 
 #[derive(Debug)]
@@ -36,22 +40,7 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesMatrix) {
 
     for vert in 0..NBR_VERT_BUCKETS {
         for horz in 0..NBR_HORZ_BUCKETS {
-            let mut to_move = Vec::with_capacity(spores.positions[vert][horz].len());
-
-            for index in 0..spores.positions[vert][horz].len() {
-                let (new_horz, new_vert) = get_bucket_from_vec(spores.positions[vert][horz][index]);
-                if (new_horz, new_vert) != (horz, vert) {
-                    to_move.push((
-                        index,
-                        (new_horz, new_vert),
-                        (
-                            spores.positions[vert][horz][index],
-                            spores.speeds[vert][horz][index],
-                            spores.spore_types[vert][horz][index],
-                        ),
-                    ));
-                }
-            }
+            let to_move = get_spores_to_move(&spores, horz, vert);
 
             // copy spores
             for &(_, (new_horz, new_vert), (pos, speed, spore_type)) in &to_move {
@@ -60,7 +49,7 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesMatrix) {
                 spores.spore_types[new_vert][new_horz].push(spore_type);
             }
 
-            // remove spores
+            // remove spores (magic)
             let spores_to_move: Vec<&usize> = to_move.iter().map(|(i, _, _)| i).collect();
             let mut i: usize = 0;
             spores.positions[vert][horz].retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
@@ -70,6 +59,30 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores: &mut SporesMatrix) {
             spores.spore_types[vert][horz].retain(|_| (!spores_to_move.contains(&&i), i += 1).0);
         }
     }
+}
+
+fn get_spores_to_move(
+    spores: &SporesMatrix,
+    horz: usize,
+    vert: usize,
+) -> Vec<(usize, (usize, usize), (Vector, Vector, u8))> {
+    let mut to_move = Vec::with_capacity(spores.positions[vert][horz].len());
+
+    for index in 0..spores.positions[vert][horz].len() {
+        let (new_horz, new_vert) = get_bucket_from_vec(spores.positions[vert][horz][index]);
+        if (new_horz, new_vert) != (horz, vert) {
+            to_move.push((
+                index,
+                (new_horz, new_vert),
+                (
+                    spores.positions[vert][horz][index],
+                    spores.speeds[vert][horz][index],
+                    spores.spore_types[vert][horz][index],
+                ),
+            ));
+        }
+    }
+    to_move
 }
 
 fn move_spores_in_bucket(
@@ -107,6 +120,14 @@ fn move_spores_in_bucket(
     }
 }
 
+
+fn modulo_position(position: Vector) -> Vector {
+    Vector {
+        x: (((position.x) % UNIVERSE_WIDTH) + UNIVERSE_WIDTH) % UNIVERSE_WIDTH,
+        y: ((position.y % UNIVERSE_HEIGHT) + UNIVERSE_HEIGHT) % UNIVERSE_HEIGHT,
+    }
+}
+
 // parallellizing with crayon slows this function down! even with DOD
 // TODO just pass neighbours?
 pub fn calculate_forces(
@@ -116,43 +137,61 @@ pub fn calculate_forces(
     (horz, vert): (usize, usize),
 ) -> Vector {
     /*
-     * 1. iter over spores in bucket
-     * 2. iter over neighbor (and self) bucket
-     * 3. iter over spores of neighbors (and self)
-     * 4. calc force
+     * 1. iter over neighbor (and self) bucket
+     * 2. calculate total force from bucket
+     * 3. sum forces of neighbors
      */
-    let mut forces = vec![];
-    for (neighb_horz, neighb_vert) in get_neighbors(horz, vert).iter() {
-        let positions = &spores.positions[*neighb_vert][*neighb_horz];
-        let spore_types = &spores.spore_types[*neighb_vert][*neighb_horz];
-        let bucket_force = (0..positions.len())
-            .into_iter()
-            .map(|bucket_index| {
-                (
-                    bucket_index,
-                    to_calibrated_dist(positions[bucket_index as usize], spore),
-                )
-            })
-            .filter(|(bucket_index, dist)| {
-                dist.tot_dist
-                    <= spore_configs.force_reaches[spore_types[*bucket_index as usize] as usize]
-            })
-            .map(|(bucket_index, dist)| {
-                calculate_force(spore_configs, spore_types[bucket_index as usize], dist)
-            })
-            .sum();
-        forces.push(bucket_force);
-    }
-
-    forces.into_iter().sum()
+    get_neighbors(horz, vert)
+        .iter()
+        .map(|(neighb_horz, neighb_vert)| {
+            let bucket_positions = &spores.positions[*neighb_vert][*neighb_horz];
+            let bucket_spore_types = &spores.spore_types[*neighb_vert][*neighb_horz];
+            calc_force_from_bucket(spore_configs, spore, bucket_positions, bucket_spore_types)
+        })
+        .sum()
 }
 
+fn calc_force_from_bucket(
+    spore_configs: &SporeConfigs,
+    spore: Vector,
+    bucket_positions: &Vec<Vector>,
+    bucket_spore_types: &Vec<u8>,
+) -> Vector {
+    /*
+     * 1. iter over spores in bucket
+     * 2. calc force of bucket spore on given spore
+     * 3. filter out spores too far away
+     * 4. sum forces
+     */
+    (0..bucket_positions.len())
+        .into_iter()
+        .map(|bucket_index| {
+            (
+                bucket_index,
+                to_calibrated_dist(bucket_positions[bucket_index as usize], spore),
+            )
+        })
+        .filter(|(bucket_index, dist)| {
+            dist.tot_dist
+                <= spore_configs.force_reaches[bucket_spore_types[*bucket_index as usize] as usize]
+        })
+        .map(|(bucket_index, dist)| {
+            calculate_force(
+                spore_configs,
+                bucket_spore_types[bucket_index as usize],
+                dist,
+            )
+        })
+        .sum()
+}
+
+// TODO more like CoordDiff ?
 pub struct Dist {
     vec: Vector,
     tot_dist: f32,
 }
 
-fn to_calibrated_dist<'a>(other: Vector, spore: Vector) -> Dist {
+fn to_calibrated_dist(other: Vector, spore: Vector) -> Dist {
     let uncalibrated_dist = other - spore;
 
     // recalibrate to account for wrap-around
@@ -203,9 +242,3 @@ fn scale_force(spore_configs: &SporeConfigs, spore_type: usize, dist: Dist) -> V
     dist.vec * (factor * scale / dist.tot_dist)
 }
 
-fn modulo_position(position: Vector) -> Vector {
-    Vector {
-        x: (((position.x) % UNIVERSE_WIDTH) + UNIVERSE_WIDTH) % UNIVERSE_WIDTH,
-        y: ((position.y % UNIVERSE_HEIGHT) + UNIVERSE_HEIGHT) % UNIVERSE_HEIGHT,
-    }
-}
