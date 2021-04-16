@@ -1,25 +1,15 @@
-use crate::{
-    bucket::get_bucket,
-    configuration::{
-        EXP_NBR_SPORES_PER_BUCKET, MAX_FORCE_AMPLITUDE, MAX_FORCE_REACH, MAX_REPULSION_DIST,
-        NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS, NUMBER_OF_CONFIGS, NUMBER_OF_SPORES, UNIVERSE_HEIGHT,
-        UNIVERSE_WIDTH,
-    },
-    spore::{SporeConfigs, SporesMatrix},
-    vector::{Vector, ZERO_VECTOR},
-};
+use crate::{bucket::get_bucket, configuration::{EXP_NBR_SPORES_PER_BUCKET, GENERATE_RANDOM_START_POSITIONS, MAX_FORCE_AMPLITUDE, MAX_FORCE_REACH, MAX_REPULSION_DIST, NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS, NUMBER_OF_CONFIGS, NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH}, spore::{SporeConfigs, SporesState}, vector::{Vector, ZERO_VECTOR}};
 use rand::prelude::*;
 
 pub fn generate_spore_configs() -> SporeConfigs {
     let mut rng = rand::thread_rng();
 
-    // TODO make arrays?
+    // TODO make arrays -> because so small. Arrays are prob loaded to the CPU cache, while Vector has one more level of redirection.
     let mut repulsion_dists = Vec::with_capacity(6);
     let mut force_factors = Vec::with_capacity(6);
     let mut force_reaches = Vec::with_capacity(6);
 
-    let randomly = true;
-    if randomly {
+    if GENERATE_RANDOM_START_POSITIONS {
         (0..NUMBER_OF_CONFIGS).for_each(|_| {
             repulsion_dists.push(rng.gen_range(0.08, 1.2) * MAX_REPULSION_DIST);
             force_factors.push(
@@ -40,12 +30,21 @@ pub fn generate_spore_configs() -> SporeConfigs {
     }
 }
 
-pub fn generate_spores() -> SporesMatrix {
+pub fn generate_spores() -> SporesState {
     let mut rng = rand::thread_rng();
 
-    let mut positions = vec![vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS];
-    let mut speeds = vec![vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS];
-    let mut spore_types = vec![vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS]; NBR_VERT_BUCKETS];
+    let mut positions = vec![
+        vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS];
+        NBR_VERT_BUCKETS
+    ];
+    let mut speeds = vec![
+        vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS];
+        NBR_VERT_BUCKETS
+    ];
+    let mut spore_types = vec![
+        vec![Vec::with_capacity(EXP_NBR_SPORES_PER_BUCKET); NBR_HORZ_BUCKETS];
+        NBR_VERT_BUCKETS
+    ];
 
     for _ in 0..NUMBER_OF_SPORES {
         let x: f32 = rng.gen_range(0.0, UNIVERSE_WIDTH);
@@ -58,7 +57,7 @@ pub fn generate_spores() -> SporesMatrix {
         speeds[vert][horz].push(ZERO_VECTOR);
         spore_types[vert][horz].push(rng.gen_range(0, NUMBER_OF_CONFIGS));
     }
-    SporesMatrix {
+    SporesState {
         positions,
         speeds,
         spore_types,

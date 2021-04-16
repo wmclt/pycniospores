@@ -14,6 +14,7 @@ use ggez::{
     nalgebra::{Point2, Vector2},
     timer, Context, GameResult,
 };
+use spore::{SporeConfigs, SporesState};
 use std::{
     env,
     path::{self, PathBuf},
@@ -22,11 +23,13 @@ use std::{
 mod bucket;
 mod configuration;
 mod generators;
+mod movement_calculator;
 mod spore;
+mod spore_mover;
 mod vector;
 
 use generators::{generate_spore_configs, generate_spores};
-use spore::{move_spores, SporeConfigs, SporesMatrix};
+use spore_mover::move_spores;
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -44,7 +47,7 @@ struct SporeUniverse {
     paused: bool,
     tick: u32,
     spore_configs: SporeConfigs,
-    spores: SporesMatrix,
+    spores: SporesState,
     view_position: Point2<f32>,
     zoom: f32,
 }

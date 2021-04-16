@@ -77,7 +77,6 @@ impl Div<f32> for Vector {
     }
 }
 
-
 impl Sum for Vector {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(ZERO_VECTOR, Add::add)

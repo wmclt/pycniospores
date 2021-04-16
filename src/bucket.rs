@@ -24,7 +24,7 @@ pub fn get_bucket(x: f32, y: f32) -> (usize, usize) {
     )
 }
 
-pub fn get_bucket_from_vec(pos: Vector) -> (usize, usize) {
+pub fn get_bucket_from_pos(pos: Vector) -> (usize, usize) {
     get_bucket(pos.x, pos.y)
 }
 
