@@ -1,26 +1,37 @@
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::{
-    bucket::get_neighbors,
-    configuration::{
+use crate::{bucket::{BucketCoord, get_neighbors}, configuration::{
         FRICTION, MAX_FORCE_REACH, REPULSION_AMPLITUDE, UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
-    },
-    spore::{SporeConfigs, SporesState},
-    vector::{Vector, ZERO_VECTOR},
-};
+    }, spore::{SporeConfigs, SporesState}, vector::{Vector, ZERO_VECTOR}};
 
 pub fn calc_new_positions_and_speeds(
     spore_configs: &SporeConfigs,
     spores: &mut SporesState,
-    (horz, vert): (usize, usize),
+    (horz, vert): BucketCoord,
 ) -> (Vec<usize>, (Vec<Vector>, Vec<Vector>)) {
-    let forces: Vec<Vector> = spores.positions[vert][horz]
+    let forces = calc_forces(&spores, (horz, vert), spore_configs);
+    update_spores_with_forces(spores, (horz, vert), forces)
+}
+
+fn calc_forces(
+    spores: &&mut SporesState,
+    (horz, vert): BucketCoord,
+    spore_configs: &SporeConfigs,
+) -> Vec<Vector> {
+    spores.positions[vert][horz]
         .par_iter()
         .map(|spore_position| {
-            calculate_forces(&spore_configs, *spore_position, &spores, (horz, vert))
+            calculate_forces_on_spore(&spore_configs, *spore_position, spores, (horz, vert))
         })
-        .collect();
+        .collect()
+}
 
+// TODO (Vec<usize>, (Vec<Vector>, Vec<Vector>)) into NewSporesData
+fn update_spores_with_forces(
+    spores: &mut SporesState,
+    (horz, vert): BucketCoord,
+    forces: Vec<Vector>,
+) -> (Vec<usize>, (Vec<Vector>, Vec<Vector>)) {
     (0..spores.positions[vert][horz].len())
         .into_par_iter()
         .map(|index| {
@@ -47,11 +58,11 @@ fn modulo_position(position: Vector) -> Vector {
 
 // parallellizing with crayon slows this function down! even with DOD
 // TODO just pass neighbours?
-pub fn calculate_forces(
+pub fn calculate_forces_on_spore(
     spore_configs: &SporeConfigs,
     spore: Vector,
     spores: &SporesState,
-    (horz, vert): (usize, usize),
+    (horz, vert): BucketCoord,
 ) -> Vector {
     /*
      * 1. iter over neighbor (and self) bucket
@@ -89,7 +100,7 @@ fn calc_force_from_bucket(
             )
         })
         .filter(|(bucket_index, dist)| {
-            dist.tot_dist
+            dist.scalar
                 <= spore_configs.force_reaches[bucket_spore_types[*bucket_index as usize] as usize]
         })
         .map(|(bucket_index, dist)| {
@@ -102,38 +113,35 @@ fn calc_force_from_bucket(
         .sum()
 }
 
+// the force function follows this function in terms of distance: either |\./\ or |\.\/
 pub fn calculate_force(spore_configs: &SporeConfigs, spore_type: u8, dist: Dist) -> Vector {
-    // if too close: acceleration away
-    // let repulsion_dist = get_repulsion_dist(spore_configs, other);
     let repulsion_dist = spore_configs.repulsion_dists[spore_type as usize];
-    if dist.tot_dist < 0.000001 { // spore itself
-        ZERO_VECTOR
-    } else if dist.tot_dist < repulsion_dist {
+    if dist.scalar < 0.000001 {
+        ZERO_VECTOR // because probably own spore (location)
+    } else if dist.scalar < repulsion_dist {
         let repulsion_force =
-            (dist.tot_dist - repulsion_dist).powi(2) * REPULSION_AMPLITUDE / repulsion_dist.powi(2);
+            (dist.scalar - repulsion_dist).powi(2) * REPULSION_AMPLITUDE / repulsion_dist.powi(2);
 
-        dist.vec * repulsion_force
+        dist.vector * repulsion_force
     } else {
         scale_force(&spore_configs, spore_type as usize, dist)
     }
 }
 
-// the force is linear to the distance |\./\ or |\.\/
 fn scale_force(spore_configs: &SporeConfigs, spore_type: usize, dist: Dist) -> Vector {
     let repulsion_dist = spore_configs.repulsion_dists[spore_type];
-    let not_repulsion_dist = dist.tot_dist - repulsion_dist;
+    let not_repulsion_dist = dist.scalar - repulsion_dist;
     let net_force_reach = spore_configs.force_reaches[spore_type] - repulsion_dist;
     let dist_from_force_reach_center = (net_force_reach - not_repulsion_dist).abs();
     let scale = dist_from_force_reach_center / net_force_reach / 2.0;
     let factor = spore_configs.force_factors[spore_type];
 
-    dist.vec * (factor * scale / dist.tot_dist)
+    dist.vector * (factor * scale / dist.scalar)
 }
 
-// TODO more like CoordDiff ?
 pub struct Dist {
-    vec: Vector,
-    tot_dist: f32,
+    vector: Vector,
+    scalar: f32,
 }
 
 fn to_calibrated_dist(other: Vector, spore: Vector) -> Dist {
@@ -154,7 +162,7 @@ fn to_calibrated_dist(other: Vector, spore: Vector) -> Dist {
     let tot_dist = (x.powi(2) + y.powi(2)).sqrt();
 
     Dist {
-        vec: Vector { x, y },
-        tot_dist,
+        vector: Vector { x, y },
+        scalar: tot_dist,
     }
 }

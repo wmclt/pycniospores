@@ -16,7 +16,7 @@ pub const MAX_FORCE_AMPLITUDE: f32 = 0.12;
 pub const MAX_FORCE_REACH: f32 = 64.0;
 // SPORE CONFIGS
 pub const NUMBER_OF_CONFIGS: u8 = 6;
-pub const NUMBER_OF_SPORES: u16 = 10000;
+pub const NUMBER_OF_SPORES: u16 = 10_000;
 // friction should be low!
 pub const FRICTION: f32 = 0.94;
 

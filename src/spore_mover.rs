@@ -1,12 +1,6 @@
 use std::usize;
 
-use crate::{
-    bucket::get_bucket_from_pos,
-    configuration::{NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS},
-    movement_calculator::calc_new_positions_and_speeds,
-    spore::{SporeConfigs, SporesState},
-    vector::Vector,
-};
+use crate::{bucket::{BucketCoord, get_bucket_from_pos}, configuration::{NBR_HORZ_BUCKETS, NBR_VERT_BUCKETS}, movement_calculator::calc_new_positions_and_speeds, spore::{SporeConfigs, SporesState}, vector::Vector};
 
 //  TWO loops
 //  1. calculate forces
@@ -32,7 +26,7 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores_state: &mut SporesState)
 fn move_spores_in_bucket(
     spore_configs: &SporeConfigs,
     spores: &mut SporesState,
-    (horz, vert): (usize, usize),
+    (horz, vert): BucketCoord,
 ) {
     // new positions & speeds
     let (indexes, (new_poss, new_speeds)) =
@@ -72,7 +66,7 @@ fn remove_spores_from_old_buckets(bucket_movements: &Vec<SporeBucketMovement>, s
 
 struct SporeBucketMovement {
     index_in_old_bucket: usize,
-    new_bucket_coord: (usize, usize),
+    new_bucket_coord: BucketCoord,
     spore_data: (Vector, Vector, u8),
 }
 
