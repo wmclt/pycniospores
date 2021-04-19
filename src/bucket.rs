@@ -29,28 +29,24 @@ pub fn get_bucket_from_pos(pos: Vector) -> BucketCoord {
     get_bucket(pos.x, pos.y)
 }
 
-// TODO iterator
 pub fn get_neighbors(horz: usize, vert: usize) -> [BucketCoord; 9] {
     [
-        (mod_horz(horz + NR_HORZ_BUCKETS - 1), mod_vert(vert + 1)),
+        (mod_horz(horz - 1), mod_vert(vert + 1)),
         (mod_horz(horz), mod_vert(vert + 1)),
         (mod_horz(horz + 1), mod_vert(vert + 1)),
-        (mod_horz(horz + NR_HORZ_BUCKETS - 1), mod_vert(vert)),
+        (mod_horz(horz - 1), mod_vert(vert)),
         (mod_horz(horz), mod_vert(vert)),
         (mod_horz(horz + 1), mod_vert(vert)),
-        (
-            mod_horz(horz + NR_HORZ_BUCKETS - 1),
-            mod_vert(vert + NR_VERT_BUCKETS - 1),
-        ),
-        (mod_horz(horz), mod_vert(vert + NR_VERT_BUCKETS - 1)),
-        (mod_horz(horz + 1), mod_vert(vert + NR_VERT_BUCKETS - 1)),
+        (mod_horz(horz - 1), mod_vert(vert - 1)),
+        (mod_horz(horz), mod_vert(vert - 1)),
+        (mod_horz(horz + 1), mod_vert(vert - 1)),
     ]
 }
 
 fn mod_horz(horz: usize) -> usize {
-    horz % NR_HORZ_BUCKETS
+    (horz + NR_HORZ_BUCKETS) % NR_HORZ_BUCKETS
 }
 
 fn mod_vert(vert: usize) -> usize {
-    vert % NR_VERT_BUCKETS
+    (vert + NR_VERT_BUCKETS) % NR_VERT_BUCKETS
 }

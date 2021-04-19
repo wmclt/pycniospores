@@ -1,8 +1,13 @@
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::{bucket::{BucketCoord, get_neighbors}, configuration::{
+use crate::{
+    bucket::{get_neighbors, BucketCoord},
+    configuration::{
         FRICTION, MAX_FORCE_REACH, REPULSION_AMPLITUDE, UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
-    }, spore::{SporeConfigs, SporesState}, vector::{Vector, ZERO_VECTOR}};
+    },
+    spore::{SporeConfigs, SporesState},
+    vector::{Vector, ZERO_VECTOR},
+};
 
 pub fn calc_new_positions_and_speeds(
     spore_configs: &SporeConfigs,

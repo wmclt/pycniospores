@@ -1,6 +1,11 @@
+use crate::{
+    bucket::{get_bucket_from_pos, BucketCoord},
+    configuration::{NR_HORZ_BUCKETS, NR_VERT_BUCKETS},
+    movement_calculator::calc_new_positions_and_speeds,
+    spore::{SporeConfigs, SporesState},
+    vector::Vector,
+};
 use std::usize;
-
-use crate::{bucket::{BucketCoord, get_bucket_from_pos}, configuration::{NR_HORZ_BUCKETS, NR_VERT_BUCKETS}, movement_calculator::calc_new_positions_and_speeds, spore::{SporeConfigs, SporesState}, vector::Vector};
 
 //  TWO loops
 //  1. calculate forces
@@ -37,7 +42,10 @@ fn move_spores_in_bucket(
     }
 }
 
-fn copy_spores_to_new_bucket(bucket_movements: &Vec<SporeBucketMovement>, spores: &mut SporesState) {
+fn copy_spores_to_new_bucket(
+    bucket_movements: &Vec<SporeBucketMovement>,
+    spores: &mut SporesState,
+) {
     for movement in bucket_movements {
         let (new_horz, new_vert) = movement.new_bucket_coord;
         let (pos, speed, spore_type) = movement.spore_data;
@@ -49,7 +57,12 @@ fn copy_spores_to_new_bucket(bucket_movements: &Vec<SporeBucketMovement>, spores
 }
 
 /// remove spores that have moved (=only keep spores that haven't moved) (uses black magic :/)
-fn remove_spores_from_old_buckets(bucket_movements: &Vec<SporeBucketMovement>, spores: &mut SporesState, vert: usize, horz: usize) {
+fn remove_spores_from_old_buckets(
+    bucket_movements: &Vec<SporeBucketMovement>,
+    spores: &mut SporesState,
+    vert: usize,
+    horz: usize,
+) {
     let bucket_movement: Vec<usize> = bucket_movements
         .iter()
         .map(|movement| movement.index_in_old_bucket)
@@ -61,7 +74,6 @@ fn remove_spores_from_old_buckets(bucket_movements: &Vec<SporeBucketMovement>, s
     i = 0;
     spores.spore_types[vert][horz].retain(|_| (!bucket_movement.contains(&i), i += 1).0);
 }
-
 
 struct SporeBucketMovement {
     index_in_old_bucket: usize,

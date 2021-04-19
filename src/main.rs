@@ -35,7 +35,6 @@ const ZOOM_SPEED: f32 = 0.03;
 const MOVE_INCREMENT: f32 = 40.0;
 
 pub fn main() -> GameResult {
-    // TODO update to clap v3 when available
     let nr_of_spores = get_nr_of_spores();
 
     let cb = ggez::ContextBuilder::new("Pycniospores", "Pycniospores")
@@ -65,6 +64,7 @@ pub fn main() -> GameResult {
     event::run(ctx, event_loop, state)
 }
 
+// TODO update to clap v3 when available
 // TODO also read if random configs or not
 fn get_nr_of_spores() -> u16 {
     let matches = App::new("Pycniospores")
