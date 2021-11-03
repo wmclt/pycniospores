@@ -6,13 +6,6 @@ The particles come in a number of configurations that either attract or repulse 
 Average FPS with 600 SPORES: 60 FPS.
 Suggestion: first do a `cargo build --release` before running it.
 
-## Best Rust Analyzer themes
-more distinctions in colors = better
-* GitHub Dark
-* Electron dark
-* Firefox Quantum Dark
-* Bluloco Dark Theme
-
 ## Literature
 
 ### About scaling: views
@@ -95,8 +88,8 @@ For Linux:
 
 * more particle types
 * non-linear force equations
-* scaling
-  * ☑️ use rayon for parallel computing of force vectors
+- scaling
+  - [x] use rayon for parallel computing of force vectors
   * acceleration structure
     * divide universe in squares = buckets
     * spores only interact with others in same bucket
@@ -106,65 +99,65 @@ For Linux:
 
 ## DONE
 
-* ☑️ window
-  * ☑️ dark background
-  * ☑️ circle
-  * ☑️ different colours for circles
-* ☑️ universe
-  * ☑️ has size
-  * ☑️ wraps around itself
-* ☑️ "spores"
-  * ☑️ have 2-coord, 2-speed, type
-  * ☑️ generated in locations
-  * ☑️ have repulsion & attraction for different types
+- [x] window
+  - [x] dark background
+  - [x] circle
+  - [x] different colours for circles
+- [x] universe
+  - [x] has size
+  - [x] wraps around itself
+- [x] "spores"
+  - [x] have 2-coord, 2-speed, type
+  - [x] generated in locations
+  - [x] have repulsion & attraction for different types
   * parameters of repulsion & attraction can easily be tweaked
-  * ☑️ movement based on force
-  * ☑️ friction: constant deceleration
-  * ☑️ spores can work at small scale
-* ☑️ show fps and tick
-* ☑️ increase fps to 60 by using mesh
-* ☑️ memory leak!
-* ☑️ forces (not just movements) must be able to wrap around
+  - [x] movement based on force
+  - [x] friction: constant deceleration
+  - [x] spores can work at small scale
+- [x] show fps and tick
+- [x] increase fps to 60 by using mesh
+- [x] memory leak!
+- [x] forces (not just movements) must be able to wrap around
   * you can see that it doesn't if spores gather at the border of the window
   * solution: map coordinates to closest coordinates, according to x- and y-axis separately
-* ☑️ symmetric vs asymmetric forces
+- [x] symmetric vs asymmetric forces
   * conclusion: prefer symmetric
-* ☑️ spores don't work like in [video](https://www.youtube.com/watch?v=Z_zmZ23grXE)
-  * ☑️ symmetric linear function
-  * ☑️ variable distances for repulsion and force
-  * ☑️ force function only depends on other spore's type, not on own type
-*  ☑️ config generation
-  *  ☑️ separate module
-  *  ☑️ pretty print config
-  *  ☑️ printed config must be immediately repluggable instead of randomly generated 
-  *  ☑️ from the [rust docs](https://doc.rust-lang.org/std/collections/struct.HashMap.html):
+- [x] spores don't work like in [video](https://www.youtube.com/watch?v=Z_zmZ23grXE)
+  - [x] symmetric linear function
+  - [x] variable distances for repulsion and force
+  - [x] force function only depends on other spore's type, not on own type
+- [x] config generation
+  - [x] separate module
+  - [x] pretty print config
+  - [x] printed config must be immediately repluggable instead of randomly generated 
+  - [x] from the [rust docs](https://doc.rust-lang.org/std/collections/struct.HashMap.html):
   ```rust
   use std::collections::HashMap;
 
   let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)].iter().cloned().collect();
   // use the values stored in map
   ```
- * ☑️ zoom
-  * ☑️ show zoom
-  * ☑️ don't zoom outside of bounds
-  * ☑️ zoom CORRECTLY!
-* ☑️ move view up, down, left, right
-  * ☑️ don't move out of bounds
-* ☑️ SPACE to pause
-* ☑️ additional fields in Cargo.toml: https://doc.rust-lang.org/cargo/reference/manifest.html
-* ☑️ performance
-  * ☑️ the loop in calculate_forces() should do as little as possible!!
-    * ☑️ remove the triple filter -> __BIG improvement!__
-    * ☑️ don't filter out if too far: just force = 0 -> decrease in performance!
-  * ☑️ use Vec::with_capacity(usize) instead of Vec::new()
-  * ☑️ use crayon for apply_forces()
-* ☑️ only show part of universe at a time for a larger universe
-  * ☑️ distinction: _view_ is only __part__ of the _universe_
-  * ☑️ bound-checking (zoom or move) should still work
-* ☑️ Vectors
-  * ☑️ use them 
-  * ☑️ implement operator Add for Point or Force
-* ☑️ performance
-  * ☑️ try out [data oriented design](http://jamesmcm.github.io/blog/2020/07/25/intro-dod/#en)
-  * ☑️ testing: don't move the spores
-* ☑️ use buckets to speed up (= split up universe in chunks)
+ - [x] zoom
+  - [x] show zoom
+  - [x] don't zoom outside of bounds
+  - [x] zoom CORRECTLY!
+- [x] move view up, down, left, right
+  - [x] don't move out of bounds
+- [x] SPACE to pause
+- [x] additional fields in Cargo.toml: https://doc.rust-lang.org/cargo/reference/manifest.html
+- [x] performance
+  - [x] the loop in calculate_forces() should do as little as possible!!
+    - [x] remove the triple filter -> __BIG improvement!__
+    - [x] don't filter out if too far: just force = 0 -> decrease in performance!
+  - [x] use Vec::with_capacity(usize) instead of Vec::new()
+  - [x] use crayon for apply_forces()
+- [x] only show part of universe at a time for a larger universe
+  - [x] distinction: _view_ is only __part__ of the _universe_
+  - [x] bound-checking (zoom or move) should still work
+- [x] Vectors
+  - [x] use them 
+  - [x] implement operator Add for Point or Force
+- [x] performance
+  - [x] try out [data oriented design](http://jamesmcm.github.io/blog/2020/07/25/intro-dod/#en)
+  - [x] testing: don't move the spores
+- [x] use buckets to speed up (= split up universe in chunks)
