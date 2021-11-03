@@ -14,7 +14,7 @@ use ggez::{
     graphics,
     graphics::Color,
     graphics::Font,
-    nalgebra::{Point2, Vector2},
+    mint::{Point2, Vector2},
     timer, Context, GameResult,
 };
 
@@ -38,14 +38,14 @@ impl Simulation {
             tick: 0,
             spore_configs: generate_spore_configs(),
             spores: generate_spores(nr_of_spores),
-            view_position: Point2::new(0.0, 0.0),
+            view_position: Point2 { x: 0.0, y: 0.0 },
             zoom: 1.0,
         };
         Ok(s)
     }
 }
 
-impl event::EventHandler for Simulation {
+impl event::EventHandler<ggez::GameError> for Simulation {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         if !self.paused {
             move_spores(&self.spore_configs, &mut self.spores);
@@ -151,11 +151,14 @@ fn draw_spores(ctx: &mut Context, universe: &Simulation) -> GameResult {
         for index in 0..(positions.len()) as usize {
             mesh_builder.circle(
                 graphics::DrawMode::fill(),
-                Point2::new(positions[index].x, positions[index].y),
+                Point2 {
+                    x: positions[index].x,
+                    y: positions[index].y,
+                },
                 4.0,
                 0.01,
                 get_color(spore_types[index]),
-            );
+            )?;
         }
     }
 
@@ -164,7 +167,10 @@ fn draw_spores(ctx: &mut Context, universe: &Simulation) -> GameResult {
         ctx,
         &mesh,
         graphics::DrawParam::new()
-            .scale(Vector2::new(universe.zoom, universe.zoom))
+            .scale(Vector2 {
+                x: universe.zoom,
+                y: universe.zoom,
+            })
             .dest(universe.view_position),
     )?;
 
@@ -195,7 +201,7 @@ fn show_numbers(
         ctx,
         &graphics::Text::new((
             format!(
-                "#spores: {}\nTime: {}\nFPS: {:.2}\nTick: {}\nAVG ticks/s: {:.2}\nZoom: x{:.2}\nCoords: {}",
+                "#spores: {}\nTime: {}\nFPS: {:.2}\nTick: {}\nAVG ticks/s: {:.2}\nZoom: x{:.2}\nCoords: {:?}",
                 nr_of_spores,
                 format_duration(timer::time_since_start(ctx).as_secs()),
                 timer::fps(ctx),
@@ -209,7 +215,7 @@ fn show_numbers(
         )),
         graphics::DrawParam::new()
             // .dest(dest_point)
-            .color(graphics::WHITE),
+            .color(Color::WHITE),
     )?;
     Ok(())
 }

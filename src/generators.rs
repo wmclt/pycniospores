@@ -22,11 +22,11 @@ pub fn generate_spore_configs() -> SporeConfigs {
     let mut force_reaches = [0.0; 6];
 
     (0..NUMBER_OF_CONFIGS as usize).for_each(|index| {
-        repulsion_dists[index] = rng.gen_range(0.08, 1.2) * MAX_REPULSION_DIST;
-        force_factors[index] = rng.gen_range(0.15, 1.0)
+        repulsion_dists[index] = rng.gen_range(0.08..=1.2) * MAX_REPULSION_DIST;
+        force_factors[index] = rng.gen_range(0.15..=1.0)
             * if rng.gen_bool(0.65) { 1.0 } else { -1.0 }
             * MAX_FORCE_AMPLITUDE;
-        force_reaches[index] = rng.gen_range(0.20, 1.0) * MAX_FORCE_REACH;
+        force_reaches[index] = rng.gen_range(0.20..=1.0) * MAX_FORCE_REACH;
     });
 
     SporeConfigs {
@@ -49,15 +49,15 @@ pub fn generate_spores(nr_of_spores: u16) -> SporesState {
         vec![vec![Vec::with_capacity(exp_nr_spores_per_bucket); NR_HORZ_BUCKETS]; NR_VERT_BUCKETS];
 
     for _ in 0..nr_of_spores {
-        let x: f32 = rng.gen_range(0.0, UNIVERSE_WIDTH);
-        let y: f32 = rng.gen_range(0.0, UNIVERSE_HEIGHT);
+        let x: f32 = rng.gen_range(0.0..UNIVERSE_WIDTH);
+        let y: f32 = rng.gen_range(0.0..UNIVERSE_HEIGHT);
 
         let (horz, vert) = get_bucket(x, y);
 
         // println!("{}, {}", horz, vert);
         positions[vert][horz].push(Vector { x, y });
         speeds[vert][horz].push(ZERO_VECTOR);
-        spore_types[vert][horz].push(rng.gen_range(0, NUMBER_OF_CONFIGS));
+        spore_types[vert][horz].push(rng.gen_range(0..NUMBER_OF_CONFIGS));
     }
     SporesState {
         positions,

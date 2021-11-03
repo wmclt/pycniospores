@@ -47,9 +47,9 @@ pub fn main() -> GameResult {
         )
         .window_setup(conf::WindowSetup::default().title("Pycniospores"));
 
-    let (ctx, event_loop) = &mut cb.build()?;
-    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf")?;
-    let state = &mut Simulation::new(font, nr_of_spores)?;
+    let (mut ctx, event_loop) = cb.build()?;
+    let font = graphics::Font::new(&mut ctx, "/DejaVuSerif.ttf")?;
+    let state = Simulation::new(font, nr_of_spores)?;
 
     println!(
         "\nWelcome to Pycniospores! A spores simulator.\n
