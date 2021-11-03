@@ -6,13 +6,6 @@ The particles come in a number of configurations that either attract or repulse 
 Average FPS with 600 SPORES: 60 FPS.
 Suggestion: first do a `cargo build --release` before running it.
 
-## Best Rust Analyzer themes
-more distinctions in colors = better
-* GitHub Dark
-* Electron dark
-* Firefox Quantum Dark
-* Bluloco Dark Theme
-
 ## Literature
 
 ### About scaling: views
