@@ -34,7 +34,7 @@ impl Simulation {
         let s = Simulation {
             font,
             paused: false,
-            nr_of_spores: nr_of_spores,
+            nr_of_spores,
             tick: 0,
             spore_configs: generate_spore_configs(),
             spores: generate_spores(nr_of_spores),
@@ -128,7 +128,7 @@ impl event::EventHandler<ggez::GameError> for Simulation {
         let background_color = rgb(34, 49, 63);
         graphics::clear(ctx, background_color);
 
-        draw_spores(ctx, &self)?;
+        draw_spores(ctx, self)?;
         show_numbers(
             ctx,
             self.font,

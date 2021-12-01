@@ -17,10 +17,10 @@ rayon = "1.5.1"
 jemallocator = "0.3.2"
 clap = "2.33.3"
 
-[profile.release]
-lto = "fat"
-codegen-units = 1
-panic = "abort"
+# [profile.release]
+# lto = "fat"
+# codegen-units = 1
+# panic = "abort"
 
 # [profile.dev]
 # opt-level = 1

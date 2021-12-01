@@ -21,7 +21,7 @@ pub fn move_spores(spore_configs: &SporeConfigs, spores_state: &mut SporesState)
 
     for vert in 0..NR_VERT_BUCKETS {
         for horz in 0..NR_HORZ_BUCKETS {
-            let bucket_movements = calc_bucket_movements(&spores_state, horz, vert);
+            let bucket_movements = calc_bucket_movements(spores_state, horz, vert);
             copy_spores_to_new_bucket(&bucket_movements, spores_state);
             remove_spores_from_old_buckets(&bucket_movements, spores_state, vert, horz);
         }
@@ -43,7 +43,7 @@ fn move_spores_in_bucket(
 }
 
 fn copy_spores_to_new_bucket(
-    bucket_movements: &Vec<SporeBucketMovement>,
+    bucket_movements: &[SporeBucketMovement],
     spores: &mut SporesState,
 ) {
     for movement in bucket_movements {
@@ -58,7 +58,7 @@ fn copy_spores_to_new_bucket(
 
 /// remove spores that have moved (=only keep spores that haven't moved) (uses black magic :/)
 fn remove_spores_from_old_buckets(
-    bucket_movements: &Vec<SporeBucketMovement>,
+    bucket_movements: &[SporeBucketMovement],
     spores: &mut SporesState,
     vert: usize,
     horz: usize,

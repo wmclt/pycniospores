@@ -26,7 +26,7 @@ fn calc_forces(
     spores.positions[vert][horz]
         .par_iter()
         .map(|spore_position| {
-            calculate_forces_on_spore(&spore_configs, *spore_position, spores, (horz, vert))
+            calculate_forces_on_spore(spore_configs, *spore_position, spores, (horz, vert))
         })
         .collect()
 }
@@ -87,8 +87,8 @@ pub fn calculate_forces_on_spore(
 fn calc_force_from_bucket(
     spore_configs: &SporeConfigs,
     spore: Vector,
-    bucket_positions: &Vec<Vector>,
-    bucket_spore_types: &Vec<u8>,
+    bucket_positions: &[Vector],
+    bucket_spore_types: &[u8],
 ) -> Vector {
     /*
      * 1. iter over spores in bucket
@@ -129,7 +129,7 @@ pub fn calculate_force(spore_configs: &SporeConfigs, spore_type: u8, dist: Dist)
 
         dist.vector * repulsion_force
     } else {
-        scale_force(&spore_configs, spore_type as usize, dist)
+        scale_force(spore_configs, spore_type as usize, dist)
     }
 }
 
