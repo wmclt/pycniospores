@@ -56,7 +56,7 @@ fn update_spores_with_forces(
 
 fn modulo_position(position: Vector) -> Vector {
     Vector {
-        x: (((position.x) % UNIVERSE_WIDTH) + UNIVERSE_WIDTH) % UNIVERSE_WIDTH,
+        x: ((position.x % UNIVERSE_WIDTH) + UNIVERSE_WIDTH) % UNIVERSE_WIDTH,
         y: ((position.y % UNIVERSE_HEIGHT) + UNIVERSE_HEIGHT) % UNIVERSE_HEIGHT,
     }
 }
