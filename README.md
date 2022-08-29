@@ -55,7 +55,12 @@ For Linux:
 ```
 
 ## TODO
+after watching this youtube video: https://www.youtube.com/watch?v=0Kx4Y9TVMGg
+I have come to the conclusion that I need asymmetric interpartical force actions to get interesting results.
+I also plan to maybe simplify the force-distance function
 
+
+### other TODOs
 * use config.rs for configuration => no recompile when changing config
 * refactor buckets code in spore.rs
 * zoom to the centre, not top left

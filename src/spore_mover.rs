@@ -42,10 +42,7 @@ fn move_spores_in_bucket(
     }
 }
 
-fn copy_spores_to_new_bucket(
-    bucket_movements: &[SporeBucketMovement],
-    spores: &mut SporesState,
-) {
+fn copy_spores_to_new_bucket(bucket_movements: &[SporeBucketMovement], spores: &mut SporesState) {
     for movement in bucket_movements {
         let (new_horz, new_vert) = movement.new_bucket_coord;
         let (pos, speed, spore_type) = movement.spore_data;

@@ -1,4 +1,6 @@
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{
+    IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
+};
 
 use crate::{
     bucket::{get_neighbors, BucketCoord},
@@ -25,8 +27,9 @@ fn calc_forces(
 ) -> Vec<Vector> {
     spores.positions[vert][horz]
         .par_iter()
-        .map(|spore_position| {
-            calculate_forces_on_spore(spore_configs, *spore_position, spores, (horz, vert))
+        .zip(&spores.spore_types[vert][horz])
+        .map(|(spore_position, spore_type)| {
+            calculate_forces_on_spore(spore_configs, *spore_position, *spore_type, spores, (horz, vert))
         })
         .collect()
 }
@@ -63,9 +66,11 @@ fn modulo_position(position: Vector) -> Vector {
 
 // parallellizing with crayon slows this function down! even with DOD
 // TODO just pass neighbours?
+// TODO pass spore index too
 pub fn calculate_forces_on_spore(
     spore_configs: &SporeConfigs,
     spore: Vector,
+    spore_type: u8,
     spores: &SporesState,
     (horz, vert): BucketCoord,
 ) -> Vector {
@@ -79,7 +84,7 @@ pub fn calculate_forces_on_spore(
         .map(|(neighb_horz, neighb_vert)| {
             let bucket_positions = &spores.positions[*neighb_vert][*neighb_horz];
             let bucket_spore_types = &spores.spore_types[*neighb_vert][*neighb_horz];
-            calc_force_from_bucket(spore_configs, spore, bucket_positions, bucket_spore_types)
+            calc_force_from_bucket(spore_configs, spore, spore_type, bucket_positions, bucket_spore_types)
         })
         .sum()
 }
@@ -87,6 +92,7 @@ pub fn calculate_forces_on_spore(
 fn calc_force_from_bucket(
     spore_configs: &SporeConfigs,
     spore: Vector,
+    spore_type: u8,
     bucket_positions: &[Vector],
     bucket_spore_types: &[u8],
 ) -> Vector {
@@ -106,12 +112,13 @@ fn calc_force_from_bucket(
         })
         .filter(|(bucket_index, dist)| {
             dist.scalar
-                <= spore_configs.force_reaches[bucket_spore_types[*bucket_index as usize] as usize]
+                <= spore_configs.force_reaches[bucket_spore_types[*bucket_index as usize] as usize][spore_type as usize]
         })
         .map(|(bucket_index, dist)| {
             calculate_force(
                 spore_configs,
-                bucket_spore_types[bucket_index as usize],
+                bucket_spore_types[bucket_index as usize] as usize,
+                spore_type as usize,
                 dist,
             )
         })
@@ -119,8 +126,8 @@ fn calc_force_from_bucket(
 }
 
 // the force function follows this function in terms of distance: either |\./\ or |\.\/
-pub fn calculate_force(spore_configs: &SporeConfigs, spore_type: u8, dist: Dist) -> Vector {
-    let repulsion_dist = spore_configs.repulsion_dists[spore_type as usize];
+pub fn calculate_force(spore_configs: &SporeConfigs, active_spore_type: usize, passive_spore_type: usize, dist: Dist) -> Vector {
+    let repulsion_dist = spore_configs.repulsion_dists[active_spore_type][passive_spore_type];
     if dist.scalar < 0.000001 {
         ZERO_VECTOR // because probably own spore (location)
     } else if dist.scalar < repulsion_dist {
@@ -129,17 +136,17 @@ pub fn calculate_force(spore_configs: &SporeConfigs, spore_type: u8, dist: Dist)
 
         dist.vector * repulsion_force
     } else {
-        scale_force(spore_configs, spore_type as usize, dist)
+        scale_force(spore_configs, active_spore_type, passive_spore_type, dist)
     }
 }
 
-fn scale_force(spore_configs: &SporeConfigs, spore_type: usize, dist: Dist) -> Vector {
-    let repulsion_dist = spore_configs.repulsion_dists[spore_type];
+fn scale_force(spore_configs: &SporeConfigs, active_spore_type: usize, passive_spore_type: usize, dist: Dist) -> Vector {
+    let repulsion_dist = spore_configs.repulsion_dists[active_spore_type][passive_spore_type];
     let not_repulsion_dist = dist.scalar - repulsion_dist;
-    let net_force_reach = spore_configs.force_reaches[spore_type] - repulsion_dist;
+    let net_force_reach = spore_configs.force_reaches[active_spore_type][passive_spore_type] - repulsion_dist;
     let dist_from_force_reach_center = (net_force_reach - not_repulsion_dist).abs();
     let scale = dist_from_force_reach_center / net_force_reach / 2.0;
-    let factor = spore_configs.force_factors[spore_type];
+    let factor = spore_configs.force_factors[active_spore_type][passive_spore_type];
 
     dist.vector * (factor * scale / dist.scalar)
 }

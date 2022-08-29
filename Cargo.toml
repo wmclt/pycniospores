@@ -11,11 +11,11 @@ keywords = ["simulation"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ggez = "0.6.1"
+ggez = "0.7.0"
 rand = "0.8.4"
 rayon = "1.5.1"
-jemallocator = "0.3.2"
-clap = "2.33.3"
+jemallocator = "0.5.0"
+clap = "3.1.10"
 
 # [profile.release]
 # lto = "fat"

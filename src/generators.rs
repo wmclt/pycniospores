@@ -1,9 +1,8 @@
 use crate::{
     bucket::get_bucket,
     configuration::{
-        MAX_FORCE_AMPLITUDE, MAX_FORCE_REACH, MAX_REPULSION_DIST, NR_BUCKETS, NR_HORZ_BUCKETS,
-        NR_VERT_BUCKETS, NUMBER_OF_CONFIGS, UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
-        USE_PREVIOUS_CONFIGURATIONS,
+        MAX_FORCE_AMPLITUDE, MAX_FORCE_REACH, MAX_REPULSION_DIST, NBR_OF_CONFS, NR_BUCKETS,
+        NR_HORZ_BUCKETS, NR_VERT_BUCKETS, UNIVERSE_HEIGHT, UNIVERSE_WIDTH,
     },
     spore::{SporeConfigs, SporesState},
     vector::{Vector, ZERO_VECTOR},
@@ -11,22 +10,23 @@ use crate::{
 use rand::prelude::*;
 
 pub fn generate_spore_configs() -> SporeConfigs {
-    if USE_PREVIOUS_CONFIGURATIONS {
-        return PREVIOUS_CONFIGS;
-    }
+    // if USE_PREVIOUS_CONFIGURATIONS {
+    //     return PREVIOUS_CONFIGS;
+    // }
 
     let mut rng = rand::thread_rng();
 
-    let mut repulsion_dists = [0.0; 6];
-    let mut force_factors = [0.0; 6];
-    let mut force_reaches = [0.0; 6];
+    let mut repulsion_dists = [[0.0; NBR_OF_CONFS as usize]; NBR_OF_CONFS as usize];
+    let mut force_factors = [[0.0; NBR_OF_CONFS as usize]; NBR_OF_CONFS as usize];
+    let mut force_reaches = [[0.0; NBR_OF_CONFS as usize]; NBR_OF_CONFS as usize];
 
-    (0..NUMBER_OF_CONFIGS as usize).for_each(|index| {
-        repulsion_dists[index] = rng.gen_range(0.08..=1.2) * MAX_REPULSION_DIST;
-        force_factors[index] = rng.gen_range(0.15..=1.0)
-            * if rng.gen_bool(0.8) { 1.0 } else { -1.0 }
-            * MAX_FORCE_AMPLITUDE;
-        force_reaches[index] = rng.gen_range(0.20..=1.0) * MAX_FORCE_REACH;
+    (0..NBR_OF_CONFS as usize).for_each(|i| {
+        (0..NBR_OF_CONFS as usize).for_each(|j| {
+            repulsion_dists[i][j] = rng.gen_range(0.08..=1.5) * MAX_REPULSION_DIST;
+            force_factors[i][j] = (rng.gen_range(0.55..=1.5) - 0.9)
+                * MAX_FORCE_AMPLITUDE;
+            force_reaches[i][j] = rng.gen_range(0.20..=1.0) * MAX_FORCE_REACH;
+        });
     });
 
     SporeConfigs {
@@ -57,7 +57,7 @@ pub fn generate_spores(nr_of_spores: u16) -> SporesState {
         // println!("{}, {}", horz, vert);
         positions[vert][horz].push(Vector { x, y });
         speeds[vert][horz].push(ZERO_VECTOR);
-        spore_types[vert][horz].push(rng.gen_range(0..NUMBER_OF_CONFIGS));
+        spore_types[vert][horz].push(rng.gen_range(0..NBR_OF_CONFS));
     }
     SporesState {
         positions,
@@ -66,8 +66,8 @@ pub fn generate_spores(nr_of_spores: u16) -> SporesState {
     }
 }
 
-pub const PREVIOUS_CONFIGS: SporeConfigs = SporeConfigs {
-    repulsion_dists: [9.82, 5.97, 9.16, 17.59, 17.57, 5.08],
-    force_factors: [0.08, -0.04, 0.06, 0.07, 0.10, -0.08],
-    force_reaches: [27.41, 58.38, 38.75, 36.55, 52.39, 65.82],
-};
+// pub const PREVIOUS_CONFIGS: SporeConfigs = SporeConfigs {
+//     repulsion_dists: [9.82, 5.97, 9.16, 17.59, 17.57, 5.08],
+//     force_factors: [0.08, -0.04, 0.06, 0.07, 0.10, -0.08],
+//     force_reaches: [27.41, 58.38, 38.75, 36.55, 52.39, 65.82],
+// };

@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::{Arg, Command};
 use configuration::{
     NUMBER_OF_SPORES, UNIVERSE_HEIGHT, UNIVERSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH,
 };
@@ -58,30 +58,29 @@ pub fn main() -> GameResult {
         arrows\tto move around\n
         space\tto pause\n
         esc\tto quit\n\n
-        Spore configuration:\n\n {}\n",
-        format!("{:.2?}", state.spore_configs)
+        Spore configuration:\n\n {:.2?}\n",
+        state.spore_configs
     );
     event::run(ctx, event_loop, state)
 }
 
-// TODO update to clap v3 when available
 // TODO also read if random configs or not
 fn get_nr_of_spores() -> u16 {
-    let matches = App::new("Pycniospores")
+    let matches = Command::new("Pycniospores")
         .version("0.1")
         .author("@wmclt on Gitlab")
         .about("The large particle simulator")
         .arg(
-            Arg::with_name("number")
+            Arg::new("number")
                 .help("Sets the number of particles ('spores')")
-                .short("n")
+                .short('n')
                 .long("number")
                 .takes_value(true),
         )
         .get_matches();
     let nr_of_spores = matches
         .value_of("number")
-        .map(|s| FromStr::from_str(s))
+        .map(FromStr::from_str)
         .map(|a| a.unwrap())
         .unwrap_or(NUMBER_OF_SPORES);
     nr_of_spores
