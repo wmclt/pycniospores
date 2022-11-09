@@ -6,7 +6,7 @@ pub const WINDOW_WIDTH: f32 = 1280.0;
 
 // UNIVERSE
 // 64 = 40 * 1.6 -> 1.6 = SCREEN_RATIO
-pub const UNIVERSE_SCALE_FACTOR: f32 = 1.0;
+pub const UNIVERSE_SCALE_FACTOR: f32 = 1.6;
 pub const UNIVERSE_WIDTH: f32 = 2560.0 * UNIVERSE_SCALE_FACTOR;
 pub const UNIVERSE_HEIGHT: f32 = 1600.0 * UNIVERSE_SCALE_FACTOR;
 
@@ -14,14 +14,14 @@ pub const UNIVERSE_HEIGHT: f32 = 1600.0 * UNIVERSE_SCALE_FACTOR;
 // pub const USE_PREVIOUS_CONFIGURATIONS: bool = false;
 
 // SPORES
-pub const MAX_REPULSION_DIST: f32 = 24.0;
-pub const REPULSION_AMPLITUDE: f32 = -5.0 * MAX_FORCE_AMPLITUDE;
-pub const MAX_FORCE_AMPLITUDE: f32 = 0.06;
-pub const MAX_FORCE_REACH: f32 = 96.0;
+pub const MAX_REPULSION_DIST: f32 = 48.0;
+pub const REPULSION_AMPLITUDE: f32 = -3.0 * MAX_FORCE_AMPLITUDE;
+pub const MAX_FORCE_AMPLITUDE: f32 = 0.050;
+pub const MAX_FORCE_REACH: f32 = 5.0 * MAX_REPULSION_DIST;
 // SPORE CONFIGS
 pub const NBR_OF_CONFS: u8 = 6;
-pub const NUMBER_OF_SPORES: u16 = 2048 / 2; // Can go up to 10k on a 2016 MacBook Pro
-                                            // friction should be low!
+pub const NUMBER_OF_SPORES: u16 = 2048; // Can go up to 10k on a 2016 MacBook Pro
+                                        // friction should be low!
 pub const FRICTION: f32 = 0.94;
 
 // BUCKETS

@@ -23,9 +23,8 @@ pub fn generate_spore_configs() -> SporeConfigs {
     (0..NBR_OF_CONFS as usize).for_each(|i| {
         (0..NBR_OF_CONFS as usize).for_each(|j| {
             repulsion_dists[i][j] = rng.gen_range(0.08..=1.5) * MAX_REPULSION_DIST;
-            force_factors[i][j] = (rng.gen_range(0.55..=1.5) - 0.9)
-                * MAX_FORCE_AMPLITUDE;
-            force_reaches[i][j] = rng.gen_range(0.20..=1.0) * MAX_FORCE_REACH;
+            force_factors[i][j] = (rng.gen_range(0.35..=1.7) - 0.8) * MAX_FORCE_AMPLITUDE;
+            force_reaches[i][j] = rng.gen_range(0.20..=2.5) * MAX_FORCE_REACH;
         });
     });
 
