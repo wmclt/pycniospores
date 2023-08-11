@@ -74,7 +74,7 @@ pub fn calculate_forces_on_spore(
      * 2. calculate total force from bucket
      * 3. sum forces of neighbors
      */
-    get_neighbors(horz, vert)
+    get_neighbors(horz as isize, vert as isize)
         .iter()
         .map(|(neighb_horz, neighb_vert)| {
             let bucket_positions = &spores.positions[*neighb_vert][*neighb_horz];
