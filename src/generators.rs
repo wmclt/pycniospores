@@ -41,6 +41,11 @@ pub fn generate_spores(nr_of_spores: u16) -> SporesState {
 
     let mut rng = rand::thread_rng();
 
+
+    // TODO: change to flat vec because inefficient!
+    // see https://old.reddit.com/r/rust/comments/3bu7a8/access_time_of_vec_vs_array/cspq1bo/
+    // see also: https://old.reddit.com/r/rust/comments/3bu7a8/access_time_of_vec_vs_array/csv37zl/
+    // which say to use probably Matrix from NAlgebra, although my matrices are 3D, not 2D, with the lowest level dynamic sized
     let mut positions =
         vec![vec![Vec::with_capacity(exp_nr_spores_per_bucket); NR_HORZ_BUCKETS]; NR_VERT_BUCKETS];
     let mut speeds =
