@@ -20,9 +20,9 @@ pub const MAX_FORCE_AMPLITUDE: f32 = 0.15;
 pub const MAX_FORCE_REACH: f32 = 64.0;
 // SPORE CONFIGS
 pub const NUMBER_OF_CONFIGS: u8 = 6;
-pub const NUMBER_OF_SPORES: u16 = 4096*2; // Can go up to 10k on a 2016 MacBook Pro
-// friction should be low!
-pub const FRICTION: f32 = 0.94;
+pub const NUMBER_OF_SPORES: u16 = 4096; // Can go up to 10k on a 2016 MacBook Pro
+                                        
+pub const FRICTION: f32 = 0.94; // friction should be low!
 
 // BUCKETS
 pub const BUCKET_SCALE_FACTOR: usize = 4;
@@ -30,4 +30,4 @@ pub const NR_VERT_BUCKETS: usize = 40 / BUCKET_SCALE_FACTOR; // 10
 pub const NR_HORZ_BUCKETS: usize = 64 / BUCKET_SCALE_FACTOR; // 16
 pub const BUCKET_HEIGHT: usize = UNIVERSE_HEIGHT as usize / NR_VERT_BUCKETS;
 pub const BUCKET_WIDTH: usize = UNIVERSE_WIDTH as usize / NR_HORZ_BUCKETS;
-pub const NR_BUCKETS: usize = NR_HORZ_BUCKETS * NR_VERT_BUCKETS; // 10*16 = 160 
+pub const NR_BUCKETS: usize = NR_HORZ_BUCKETS * NR_VERT_BUCKETS; // 10*16 = 160

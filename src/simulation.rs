@@ -7,19 +7,17 @@ use crate::{
     HEIGHT_RATIO, MAX_ZOOM, MIN_ZOOM, MOVE_INCREMENT, WIDTH_RATIO, ZOOM_SPEED,
 };
 use ggez::{
-    self, event,
-    event::quit,
-    event::KeyCode,
-    event::KeyMods,
-    graphics,
-    graphics::Color,
-    graphics::Font,
+    self,
+    context::Context,
+    event,
+    graphics::{self, Color, Mesh},
+    input::keyboard::{KeyCode, KeyInput},
     mint::{Point2, Vector2},
-    timer, Context, GameResult,
+    GameResult,
+    glam::Vec2
 };
 
 pub struct Simulation {
-    font: Font,
     nr_of_spores: u16,
     paused: bool,
     tick: u32,
@@ -30,9 +28,13 @@ pub struct Simulation {
 }
 
 impl Simulation {
-    pub fn new(font: Font, nr_of_spores: u16) -> GameResult<Simulation> {
+    pub fn new(ctx: &mut Context, nr_of_spores: u16) -> GameResult<Simulation> {
+        ctx.gfx.add_font(
+            "DejaVu",
+            graphics::FontData::from_path(ctx, "/DejaVuSerif.ttf")?,
+        );
+
         let s = Simulation {
-            font,
             paused: false,
             nr_of_spores: nr_of_spores,
             tick: 0,
@@ -54,16 +56,11 @@ impl event::EventHandler<ggez::GameError> for Simulation {
         Ok(())
     }
 
-    fn key_down_event(
-        &mut self,
-        ctx: &mut Context,
-        keycode: KeyCode,
-        _keymods: KeyMods,
-        _repeat: bool,
-    ) {
-        match keycode {
+    fn key_down_event(&mut self, ctx: &mut Context, input: KeyInput, _repeat: bool) -> GameResult {
+        match input.keycode.unwrap_or(KeyCode::A) {
+            //just want it to shut up
             KeyCode::Escape => {
-                quit(ctx);
+                ctx.request_quit();
             }
             KeyCode::Space => {
                 self.paused = !self.paused;
@@ -122,28 +119,34 @@ impl event::EventHandler<ggez::GameError> for Simulation {
             }
             _ => {}
         }
+        Result::Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        let background_color = rgb(34, 49, 63);
-        graphics::clear(ctx, background_color);
+        let _background_color = rgb(34, 49, 63);
 
-        draw_spores(ctx, &self)?;
+        // graphics::clear(ctx, background_color);
+
+        let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+        draw_spores(ctx, &mut canvas, &self)?;
         show_numbers(
             ctx,
-            self.font,
+            &mut canvas,
             self.nr_of_spores,
             self.tick,
             self.zoom,
             self.view_position,
         )?;
 
-        graphics::present(ctx)?;
+
+        canvas.finish(ctx)?;
+
+        // graphics::present(ctx)?;
         Ok(())
     }
 }
 
-fn draw_spores(ctx: &mut Context, universe: &Simulation) -> GameResult {
+fn draw_spores(ctx: &mut Context, canvas: &mut graphics::Canvas, universe: &Simulation) -> GameResult {
     let mut mesh_builder = graphics::MeshBuilder::new();
     for (horz, vert) in get_buckets() {
         let positions = &universe.spores.positions[vert][horz];
@@ -151,10 +154,7 @@ fn draw_spores(ctx: &mut Context, universe: &Simulation) -> GameResult {
         for index in 0..(positions.len()) as usize {
             mesh_builder.circle(
                 graphics::DrawMode::fill(),
-                Point2 {
-                    x: positions[index].x,
-                    y: positions[index].y,
-                },
+                Vec2::new(positions[index].x, positions[index].y),
                 4.0,
                 0.01,
                 get_color(spore_types[index]),
@@ -162,17 +162,16 @@ fn draw_spores(ctx: &mut Context, universe: &Simulation) -> GameResult {
         }
     }
 
-    let mesh = mesh_builder.build(ctx)?;
-    graphics::draw(
-        ctx,
-        &mesh,
+    let mesh = mesh_builder.build();
+    canvas.draw(
+        &Mesh::from_data(&ctx.gfx, mesh),
         graphics::DrawParam::new()
             .scale(Vector2 {
                 x: universe.zoom,
                 y: universe.zoom,
             })
             .dest(universe.view_position),
-    )?;
+    );
 
     Ok(())
 }
@@ -191,32 +190,34 @@ fn get_color(spore_type: u8) -> Color {
 
 fn show_numbers(
     ctx: &mut Context,
-    font: Font,
+    canvas: &mut graphics::Canvas,
     nr_of_spores: u16,
     tick: u32,
     zoom: f32,
     position: Point2<f32>,
 ) -> GameResult {
-    graphics::draw(
-        ctx,
-        &graphics::Text::new((
+
+    // Text is drawn from the top-left corner.
+    let offset = 10.0;
+    let dest_point = ggez::glam::Vec2::new(offset, offset);
+    canvas.draw(
+        graphics::Text::new(
             format!(
                 "#spores: {}\nTime: {}\nFPS: {:.2}\nTick: {}\nAVG ticks/s: {:.2}\nZoom: x{:.2}\nCoords: {:?}",
                 nr_of_spores,
-                format_duration(timer::time_since_start(ctx).as_secs()),
-                timer::fps(ctx),
+                format_duration(ctx.time.time_since_start().as_secs()),
+                ctx.time.fps(),
                 tick,
-                (tick as f32) / timer::time_since_start(ctx).as_secs_f32(),
+                (tick as f32) / ctx.time.time_since_start().as_secs_f32(),
                 zoom,
                 position,
             ),
-            font,
-            18.0,
-        )),
-        graphics::DrawParam::new()
-            // .dest(dest_point)
-            .color(Color::WHITE),
-    )?;
+        )
+            .set_font("DejaVu")
+            .set_scale(36.0),
+        dest_point,
+    );
+
     Ok(())
 }
 

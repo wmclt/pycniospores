@@ -41,7 +41,6 @@ pub fn generate_spores(nr_of_spores: u16) -> SporesState {
 
     let mut rng = rand::thread_rng();
 
-
     // TODO: change to flat vec because inefficient!
     // see https://old.reddit.com/r/rust/comments/3bu7a8/access_time_of_vec_vs_array/cspq1bo/
     // see also: https://old.reddit.com/r/rust/comments/3bu7a8/access_time_of_vec_vs_array/csv37zl/

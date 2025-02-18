@@ -5,7 +5,7 @@ use configuration::{
 use ggez::{
     self,
     conf::{self},
-    event, graphics, GameResult,
+    event, GameResult,
 };
 use simulation::Simulation;
 use std::{
@@ -48,8 +48,7 @@ pub fn main() -> GameResult {
         .window_setup(conf::WindowSetup::default().title("Pycniospores"));
 
     let (mut ctx, event_loop) = cb.build()?;
-    let font = graphics::Font::new(&mut ctx, "/DejaVuSerif.ttf")?;
-    let state = Simulation::new(font, nr_of_spores)?;
+    let state = Simulation::new(&mut ctx, nr_of_spores)?;
 
     println!(
         "\nWelcome to Pycniospores! A spores simulator.\n

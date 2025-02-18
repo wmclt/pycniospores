@@ -11,7 +11,7 @@ keywords = ["simulation"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ggez = "0.6.1"
+ggez = "0.9.3"
 rand = "0.8.4"
 rayon = "1.5.1"
 jemallocator = "0.3.2"
