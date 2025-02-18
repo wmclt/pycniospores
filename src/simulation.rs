@@ -10,11 +10,11 @@ use ggez::{
     self,
     context::Context,
     event,
+    glam::Vec2,
     graphics::{self, Color, Mesh},
     input::keyboard::{KeyCode, KeyInput},
     mint::{Point2, Vector2},
     GameResult,
-    glam::Vec2
 };
 
 pub struct Simulation {
@@ -123,11 +123,16 @@ impl event::EventHandler<ggez::GameError> for Simulation {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
+        if self.tick % 8 == 0 {
+            return Ok(());
+        }
+
         let _background_color = rgb(34, 49, 63);
 
         // graphics::clear(ctx, background_color);
 
-        let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+        let mut canvas =
+            graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         draw_spores(ctx, &mut canvas, &self)?;
         show_numbers(
             ctx,
@@ -138,7 +143,6 @@ impl event::EventHandler<ggez::GameError> for Simulation {
             self.view_position,
         )?;
 
-
         canvas.finish(ctx)?;
 
         // graphics::present(ctx)?;
@@ -146,7 +150,11 @@ impl event::EventHandler<ggez::GameError> for Simulation {
     }
 }
 
-fn draw_spores(ctx: &mut Context, canvas: &mut graphics::Canvas, universe: &Simulation) -> GameResult {
+fn draw_spores(
+    ctx: &mut Context,
+    canvas: &mut graphics::Canvas,
+    universe: &Simulation,
+) -> GameResult {
     let mut mesh_builder = graphics::MeshBuilder::new();
     for (horz, vert) in get_buckets() {
         let positions = &universe.spores.positions[vert][horz];
@@ -196,7 +204,6 @@ fn show_numbers(
     zoom: f32,
     position: Point2<f32>,
 ) -> GameResult {
-
     // Text is drawn from the top-left corner.
     let offset = 10.0;
     let dest_point = ggez::glam::Vec2::new(offset, offset);
