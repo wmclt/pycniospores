@@ -12,10 +12,10 @@ keywords = ["simulation"]
 
 [dependencies]
 ggez = "0.9.3"
-rand = "0.8.4"
-rayon = "1.5.1"
-jemallocator = "0.3.2"
-clap = "2.33.3"
+rand = "0.9.0"
+rayon = "1.10.0"
+jemallocator = "0.5.4"
+clap = "2.34.0"
 
 [profile.release]
 lto = "fat"
