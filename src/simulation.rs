@@ -186,12 +186,15 @@ fn draw_spores(
 
 fn get_color(spore_type: u8) -> Color {
     match spore_type {
-        0 => rgb(238, 96, 85),   //red
-        1 => rgb(90, 200, 140),  // green
-        2 => rgb(180, 250, 140), // light green
-        3 => rgb(255, 217, 125), // orange
-        4 => rgb(255, 155, 133), // salmon
-        5 => rgb(89, 136, 207),  // blue
+        0 => rgb(238, 96, 85),  //red
+        1 => rgb(220, 130, 27), // green
+        2 => rgb(230, 210, 31), // light green
+        3 => rgb(131, 221, 27), // orange
+        4 => rgb(37, 186, 94),  // salmon
+        5 => rgb(29, 227, 234), // blue
+        6 => rgb(35, 96, 251),  // blue
+        7 => rgb(169, 40, 243), // blue
+        8 => rgb(230, 37, 237), // blue
         _ => panic!(),
     }
 }
